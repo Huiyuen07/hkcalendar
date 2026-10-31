@@ -1,0 +1,31 @@
+# 卡片需要的 template 實體，加入 configuration.yaml。
+# Template entities the card needs. Add to configuration.yaml.
+#
+# 假設 / assumptions:
+# - 老黃曆整合命名為 trad_cal，所以有 sensor.trad_cal_nong_li 等實體。
+#   The almanac integration is named trad_cal, giving sensor.trad_cal_nong_li etc.
+# - calendar.hksar 來自 Holiday 整合（地區選香港）。
+#   calendar.hksar comes from the Holiday integration, set to Hong Kong.
+# - binary_sensor.workday_sensor 來自 Workday 整合。
+#   binary_sensor.workday_sensor comes from the Workday integration.
+# - calendar.nong_li 是可選的農曆節日日曆；沒有這個實體時，該部分不會顯示。
+#   calendar.nong_li is an optional lunar festival calendar; without it that part is skipped.
+
+template:
+  - sensor:
+      - name: today
+        state: >-
+          {% if is_state('calendar.nong_li', 'on') %}{{ state_attr('calendar.nong_li', 'message') }} | {% endif %}{% if is_state('calendar.hksar', 'on') %}{{ state_attr('calendar.hksar', 'message') }} | {% endif %}{{ states('sensor.trad_cal_sheng_xiao_chong_sha') }}
+      - name: lunar year
+        state: "{{ states('sensor.trad_cal_nong_li').split(' ')[0] }}"
+      - name: lunar date
+        state: "{{ states('sensor.trad_cal_nong_li').split(' ')[1] }}"
+
+  - binary_sensor:
+      - name: hksar workday
+        state: >-
+          {% if is_state("calendar.hksar", "on") or is_state("binary_sensor.workday_sensor", "off") %}
+          off
+          {% else %}
+          on
+          {% endif %}

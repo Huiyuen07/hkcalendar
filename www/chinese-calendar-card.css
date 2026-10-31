@@ -1,0 +1,170 @@
+@import url(//fonts.googleapis.com/earlyaccess/notosanstc.css);
+
+.calendar {
+    max-width: 400px;
+    width: 100%;
+    margin: 0 auto;
+    height: 100%;
+    background-color: #fff;
+    box-shadow: 5px 5px 15px rgba(0,0,0,0.3);
+    border: 10px solid var(--theme-color);
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    font-family: 'Noto Sans TC';
+}
+
+.header {
+    display: flex;
+    justify-content: space-between;
+    width: 100%;
+    max-width: 400px;
+    align-items: center;
+    font-size: 24px;
+    background-color: var(--theme-color);
+    color: #fff;
+    padding: 0px 10px 5px;
+    box-sizing: border-box;
+    border: 3px solid var(--theme-color);
+}
+
+.header div {
+    flex: 1;
+    text-align: center;
+}
+
+.header .english-month {
+    text-align: left;
+}
+
+.header .chinese-month {
+    text-align: right;
+}
+
+.current-time {
+    font-size: 25px;
+    color: var(--theme-color);
+    margin: 5px 0;
+}
+
+.date {
+    font-size: 180px;
+    font-weight: bold;
+    margin: 0 0 10px 0;
+    color: var(--theme-color);
+    line-height: 170px;
+}
+
+.content-wrapper {
+    width: 100%;
+    max-width: 400px;
+    align-items: center;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+}
+
+.today-text {
+    width: 100%;
+    font-size: 18px;
+    color: var(--theme-color);
+    text-align: center;
+    margin-bottom: 10px;
+}
+
+.table-container {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 18px;
+    border-width: 3px 0;
+    border-style: solid;
+    border-color: var(--theme-color);
+}
+
+.table-container td {
+    text-align: center;
+    vertical-align: top;
+    color: var(--theme-color);
+    padding: 0;
+}
+
+.yi-ji-container {
+    height: 80px;
+    overflow: hidden;
+    font-size: 16px;
+}
+
+.highlight-weekday {
+    background-color: var(--theme-color);
+    color: #fff;
+    padding: 10px 0;
+    display: block;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.lunar-year {
+    font-size: 16px;
+    color: var(--theme-color);
+    margin-bottom: 5px;
+    padding: 10px 0 0 0;
+}
+
+.schedule-container {
+    width: 100%;
+    border-top: none;
+    padding: 5px;
+    color: var(--theme-color);
+    font-size: 16px;
+    height: 40px;
+    overflow: hidden;
+    box-sizing: border-box;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.schedule-text {
+    white-space: nowrap;
+    text-align: center;
+    display: inline-block;
+    max-width: 100%;
+}
+
+.schedule-text.overflow {
+    animation: marquee var(--marquee-duration, 10s) linear infinite;
+}
+
+.suitable {
+    width: 25%;
+    padding: 10px !important;
+    border-width: 0 3px 0 0;
+    border-style: solid;
+    border-color: var(--theme-color);
+}
+
+.forbidden {
+    width: 25%;
+    padding: 10px !important;
+    border-width: 0 0 0 3px;
+    border-style: solid;
+    border-color: var(--theme-color);
+}
+
+/* 淡入動畫 */
+.fade-in {
+    animation: fadeIn 0.5s ease-in;
+}
+
+@keyframes fadeIn {
+    0% { opacity: 0; }
+    100% { opacity: 1; }
+}
+
+/* 走馬燈動畫 */
+@keyframes marquee {
+    0% { transform: translateX(100%); }
+    100% { transform: translateX(-100%); }
+}
