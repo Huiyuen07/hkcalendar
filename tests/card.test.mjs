@@ -1,42 +1,15 @@
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
-import { before, test } from "node:test";
-
-const CONFIG = {
-  date_entity: "sensor.date",
-  time_entity: "sensor.time",
-  lunar_year_entity: "sensor.lunar_year",
-  lunar_entity: "sensor.lunar_date",
-  yi_entity: "sensor.trad_cal_yi",
-  ji_entity: "sensor.trad_cal_ji",
-  rolling_text_entity: "input_text.calendar",
-  today_entity: "sensor.today",
-  workday_entity: "binary_sensor.hksar_workday",
-  holidayColor: "#d43b02",
-  workdayColor: "#2e8b57",
-};
-
-const BASE_STATES = {
-  "sensor.date": "2026-01-05",
-  "sensor.time": "16:48",
-  "sensor.lunar_year": "丙午(马)年",
-  "sensor.lunar_date": "九月大廿二",
-  "sensor.trad_cal_yi": "祭祀 出行",
-  "sensor.trad_cal_ji": "冠带 破屋",
-  "input_text.calendar": "無日程",
-  "sensor.today": "虎日衝猴",
-  "binary_sensor.hksar_workday": "on",
-};
+import { before, mock, test } from "node:test";
 
 let Card;
 
-// Load the card with just enough browser globals to reach its pure logic.
+// Load the card with just enough browser globals to reach its logic.
 before(async () => {
   globalThis.HTMLElement = class {
     attachShadow() {}
   };
-  globalThis.window = { OpenCC: { Converter: () => (text) => text } };
-  globalThis.document = { createElement: () => ({}) };
+  globalThis.window = {};
   globalThis.customElements = {
     define(name, element) {
       if (name === "chinese-calendar-card") Card = element;
@@ -45,64 +18,155 @@ before(async () => {
   await import("../www/chinese-calendar-card.js");
 });
 
-function prepare(stateOverrides = {}, config = CONFIG) {
+const HOLIDAY = "#CC0000";
+const WORKDAY = "#006400";
+const allDay = (summary, start, end) => ({ summary, start: { date: start }, end: { date: end } });
+
+function makeCard(config = {}) {
   const card = new Card();
-  const states = { ...BASE_STATES, ...stateOverrides };
-  card._hass = {
-    states: Object.fromEntries(Object.entries(states).map(([id, state]) => [id, { state }])),
-  };
-  card.config = config;
-  return card.prepareData();
+  card.setConfig(config);
+  return card;
 }
 
-test("formats the Gregorian date and 12-hour time", () => {
-  const data = prepare();
-  assert.equal(data.englishMonth, "January");
-  assert.equal(data.chineseMonth, "一月");
+test("shows a full calendar with no configuration", () => {
+  const data = makeCard().prepareData(new Date(2026, 10, 2, 16, 48));
+  assert.equal(data.englishMonth, "November");
+  assert.equal(data.chineseMonth, "十一月");
   assert.equal(data.year, 2026);
-  assert.equal(data.day, 5);
+  assert.equal(data.day, 2);
+  assert.equal(data.weekday, "星期一   Monday");
   assert.equal(data.formattedTime, "04:48 PM");
+  assert.equal(data.lunarYear, "丙午(馬)年");
+  assert.equal(data.lunar, "九月廿四");
+  assert.equal(data.todayText, "龍日沖狗");
+  assert.equal(data.eventSummary, "無日程");
+  assert.equal(data.themeColor, WORKDAY);
 });
 
-test("shows midnight and noon correctly", () => {
-  assert.equal(prepare({ "sensor.time": "00:05" }).formattedTime, "12:05 AM");
-  assert.equal(prepare({ "sensor.time": "12:05" }).formattedTime, "12:05 PM");
+test("shows only the first four 宜 and 忌", () => {
+  const data = makeCard().prepareData(new Date(2026, 10, 2));
+  assert.deepEqual(data.yi, ["祭祀", "沐浴", "解除", "破屋"]);
+  assert.ok(data.ji.length <= 4);
 });
 
-test("splits 宜 and 忌 into items", () => {
-  const data = prepare();
-  assert.deepEqual(data.yi, ["祭祀", "出行"]);
-  assert.deepEqual(data.ji, ["冠带", "破屋"]);
+test("shows short lists as they are and 無 for an empty 忌", () => {
+  const data = makeCard().prepareData(new Date(2026, 10, 7));
+  assert.deepEqual(data.yi, ["解除", "餘事勿取"]);
+  assert.deepEqual(data.ji, ["無"]);
 });
 
-test("normalises 衝 to 沖 in the daily text", () => {
-  assert.equal(prepare().todayText, "虎日沖猴");
+test("Sundays use the holiday colour", () => {
+  assert.equal(makeCard().prepareData(new Date(2026, 10, 1)).themeColor, HOLIDAY);
 });
 
-test("uses the workday colour on a normal weekday", () => {
-  assert.equal(prepare().themeColor, CONFIG.workdayColor);
+test("a holiday from a calendar is named and coloured", () => {
+  const card = makeCard({ holiday_calendars: ["calendar.hksar"] });
+  card._holidayEvents = [allDay("聖誕節", "2026-12-25", "2026-12-26")];
+  const data = card.prepareData(new Date(2026, 11, 25));
+  assert.ok(data.todayText.startsWith("聖誕節 ｜ "), data.todayText);
+  assert.equal(data.themeColor, HOLIDAY);
 });
 
-test("uses the holiday colour on Sundays and holidays", () => {
-  assert.equal(prepare({ "sensor.date": "2026-01-04" }).themeColor, CONFIG.holidayColor);
-  assert.equal(prepare({ "binary_sensor.hksar_workday": "off" }).themeColor, CONFIG.holidayColor);
+test("a make-up Sunday uses the workday colour and says 補班", () => {
+  const card = makeCard();
+  card._holidayEvents = [allDay("放假日（2026-02-15 補班）", "2026-02-20", "2026-02-21")];
+  const data = card.prepareData(new Date(2026, 1, 15));
+  assert.equal(data.themeColor, WORKDAY);
+  assert.ok(data.todayText.includes("補班"), data.todayText);
 });
 
-test("loads the stylesheet relative to the card, not a fixed path", async () => {
+test("lunar festivals lead the daily text", () => {
+  assert.equal(makeCard().prepareData(new Date(2026, 9, 18)).todayText, "重陽節 ｜ 牛日沖羊");
+});
+
+test("today's events are shown", () => {
+  const card = makeCard();
+  card._events = [allDay("生日", "2026-11-02", "2026-11-03")];
+  assert.equal(card.prepareData(new Date(2026, 10, 2)).eventSummary, "生日");
+});
+
+test("setConfig accepts an empty config and applies the default colours", () => {
+  const card = makeCard();
+  assert.equal(card.config.holidayColor, HOLIDAY);
+  assert.equal(card.config.workdayColor, WORKDAY);
+  assert.deepEqual(card.config.holiday_calendars, []);
+  assert.deepEqual(card.config.event_calendars, []);
+});
+
+test("tick refreshes the calendars when the day changes", () => {
+  const card = makeCard();
+  const refresh = mock.fn(function (now) { this._lastRefresh = now.getTime(); });
+  card.refreshCalendars = refresh;
+  card.render = () => {};
+  card.tick(new Date(2026, 10, 2, 23, 59));
+  card.tick(new Date(2026, 10, 2, 23, 59, 30));
+  assert.equal(refresh.mock.callCount(), 1);
+  card.tick(new Date(2026, 10, 3, 0, 0));
+  assert.equal(refresh.mock.callCount(), 2);
+  assert.equal(refresh.mock.calls[1].arguments[0].getDate(), 3);
+});
+
+test("tick refreshes the calendars every ten minutes", () => {
+  const card = makeCard();
+  const refresh = mock.fn(function (now) { this._lastRefresh = now.getTime(); });
+  card.refreshCalendars = refresh;
+  card.render = () => {};
+  card.tick(new Date(2026, 10, 2, 10, 0));
+  card.tick(new Date(2026, 10, 2, 10, 9));
+  card.tick(new Date(2026, 10, 2, 10, 10));
+  assert.equal(refresh.mock.callCount(), 2);
+});
+
+test("tick re-renders when the minute changes", () => {
+  const card = makeCard();
+  card.refreshCalendars = () => {};
+  const render = mock.fn();
+  card.render = render;
+  card.tick(new Date(2026, 10, 2, 10, 0, 1));
+  card.tick(new Date(2026, 10, 2, 10, 0, 2));
+  card.tick(new Date(2026, 10, 2, 10, 1, 0));
+  assert.equal(render.mock.callCount(), 2);
+});
+
+test("refreshCalendars reads the configured calendars for the right ranges", async () => {
+  const card = makeCard({ holiday_calendars: ["calendar.hksar"], event_calendars: ["calendar.family"] });
+  card.render = () => {};
+  const paths = [];
+  card._hass = { callApi: async (_m, path) => { paths.push(path); return []; } };
+  await card.refreshCalendars(new Date(2026, 10, 2, 10));
+  const holiday = paths.find((p) => p.startsWith("calendars/calendar.hksar?"));
+  const events = paths.find((p) => p.startsWith("calendars/calendar.family?"));
+  assert.ok(holiday.includes(`start=${encodeURIComponent(new Date(2026, 8, 18).toISOString())}`), holiday);
+  assert.ok(events.includes(`start=${encodeURIComponent(new Date(2026, 10, 2).toISOString())}`), events);
+  assert.ok(events.includes(`end=${encodeURIComponent(new Date(2026, 10, 3).toISOString())}`), events);
+});
+
+test("a failing calendar API leaves the almanac working", async () => {
+  const error = mock.method(console, "error", () => {});
+  const card = makeCard({ holiday_calendars: ["calendar.gone"], event_calendars: ["calendar.gone"] });
+  card.render = () => {};
+  card._hass = { callApi: async () => { throw new Error("404"); } };
+  await card.refreshCalendars(new Date(2026, 10, 2));
+  const data = card.prepareData(new Date(2026, 10, 2));
+  assert.equal(data.lunar, "九月廿四");
+  assert.equal(data.eventSummary, "無日程");
+  error.mock.restore();
+});
+
+test("the first hass triggers a refresh", () => {
+  const card = makeCard();
+  const refresh = mock.fn();
+  card.refreshCalendars = refresh;
+  card.render = () => {};
+  card.hass = { callApi: async () => [] };
+  card.hass = { callApi: async () => [] };
+  assert.equal(refresh.mock.callCount(), 1);
+});
+
+test("the card source has no CDN, no fixed paths and no data in innerHTML", async () => {
   const source = await readFile(new URL("../www/chinese-calendar-card.js", import.meta.url), "utf8");
   assert.match(source, /new URL\(`chinese-calendar-card\.css[^`]*`, import\.meta\.url\)/);
   assert.doesNotMatch(source, /['"`]\/local\//);
-});
-
-test("setConfig rejects a config with missing entities", () => {
-  const card = new Card();
-  assert.throws(() => card.setConfig({ date_entity: "sensor.date" }), /實體/);
-});
-
-test("setConfig applies the default colours", () => {
-  const card = new Card();
-  const { holidayColor, workdayColor, ...config } = CONFIG;
-  card.setConfig(config);
-  assert.equal(card.config.holidayColor, "#CC0000");
-  assert.equal(card.config.workdayColor, "#006400");
+  assert.doesNotMatch(source, /opencc|jsdelivr/i);
+  assert.equal((source.match(/innerHTML\s*=/g) ?? []).length, 1, "only the static template may use innerHTML");
 });
