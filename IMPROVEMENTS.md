@@ -37,14 +37,14 @@
 
 - [ ] **H3 內建資料：** 打包 lunar-js，提供農曆、宜忌、沖煞、節氣和農曆節日，並附上它的 MIT 授權聲明。黃金測試鎖定固定日期的輸出。
 - [ ] **H2 移除 OpenCC CDN：** 實測 jsDelivr 被擋時，卡片完全不顯示，也沒有錯誤提示。改用內建繁體對照表，並以測試掃描 1900 至 2100 年，確保沒有遺漏的簡體字。
-- [ ] **H4 實體全部變可選：** 沒有任何設定也能顯示完整日曆，日期時間取自瀏覽器。舊版的實體選項一律略過，不會報錯。
+- [ ] **H4 實體全部變可選：** 沒有任何設定也能顯示完整日曆，日期時間取自瀏覽器。不保留舊版相容，舊的實體選項和相關程式碼一併刪除。
 - [ ] **H7 假期：** 新選項 `holiday_calendars`。當日有全日事件就是假期，星期日一律是假日；補班日按大陸假期名稱中的日期，改用工作日顏色。不再使用 `workday_entity`。
 - [ ] **H8 日程：** 新選項 `event_calendars`，卡片直接讀取當日事件，取代 `input_text`（上限 255 字）、script 和每 5 分鐘一次的 automation。
 - [ ] **H5 卡片編輯器：** 用 HA 內建的表單元件揀日曆和顏色，並發出 `config-changed`。註冊 `window.customCards`，令卡片出現在卡片選擇器。
 
 以下各項會在上面的工作中一併解決：
 - [ ] **H11 農曆寫法：** lunar-js 本身就寫「九月廿四」，不再出現「九月大」。
-- [ ] **H12 宜忌顯示不全：** 全部顯示，不截斷。單日最多 31 項，項目多時縮細字、分欄或讓區塊變高。
+- [ ] **H12 宜忌顯示：** 美感優先，宜、忌各顯示頭四項，每項一行，維持現在的字體大小和區塊高度。
 - [ ] **H13 時區問題：** 不再用 `new Date('YYYY-MM-DD')`。`npm test` 移除固定的 `TZ`，並在非香港時區下通過。
 - [ ] **H14 改用 `textContent`：** 所有由資料產生的文字都不再經 `innerHTML` 寫入。
 
@@ -107,14 +107,14 @@ Suggested order: H3 → H2 → H4 → H7 → H8 → H5, then the author's migrat
 
 - [ ] **H3 Built-in data:** Bundle lunar-js for lunar date, almanac, zodiac clash, solar terms and lunar festivals, with its MIT notice. Golden tests pin the output for fixed dates.
 - [ ] **H2 Remove the OpenCC CDN:** Tested: with jsDelivr blocked, the card renders nothing and shows no error. Replace it with a built-in Traditional Chinese table, and add a test that scans 1900–2100 for any missed Simplified characters.
-- [ ] **H4 Make all entities optional:** The card shows a full calendar with no configuration, taking date and time from the browser. Old entity options are ignored without error.
+- [ ] **H4 Make all entities optional:** The card shows a full calendar with no configuration, taking date and time from the browser. No backward compatibility: the old entity options and their code are removed.
 - [ ] **H7 Holidays:** New `holiday_calendars` option. An all-day event marks the day as a holiday, and Sundays always use the holiday colour. Make-up workdays named in mainland holiday titles use the workday colour. `workday_entity` is no longer used.
 - [ ] **H8 Events:** New `event_calendars` option. The card reads today's events directly, replacing `input_text` (255-character limit), the script and the five-minute automation.
 - [ ] **H5 Card editor:** Pick calendars and colours with HA's built-in form components, and fire `config-changed`. Register in `window.customCards` so the card appears in the card picker.
 
 Also resolved by the work above:
 - [ ] **H11 Lunar wording:** lunar-js writes 「九月廿四」 itself, so 「九月大」 no longer appears.
-- [ ] **H12 Truncated almanac:** Show every item without truncating. A day can have up to 31; shrink the text, add columns or let the area grow.
+- [ ] **H12 Almanac display:** Looks come first. Show the first four favourable and the first four unfavourable items, one per line, keeping today's font size and area height.
 - [ ] **H13 Time zone bug:** Stop using `new Date('YYYY-MM-DD')`. Remove the pinned `TZ` from `npm test` and pass in a non-Hong Kong time zone.
 - [ ] **H14 Use `textContent`:** No data-derived text goes through `innerHTML`.
 
