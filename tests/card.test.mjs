@@ -108,10 +108,8 @@ test("today's events are shown", () => {
   assert.equal(card.prepareData(new Date(2026, 10, 2)).eventSummary, "生日");
 });
 
-test("setConfig accepts an empty config and applies the default colours", () => {
+test("setConfig accepts an empty config", () => {
   const card = makeCard();
-  assert.equal(card.config.holidayColor, HOLIDAY);
-  assert.equal(card.config.workdayColor, WORKDAY);
   assert.deepEqual(card.config.holiday_calendars, []);
   assert.deepEqual(card.config.event_calendars, []);
 });
@@ -198,13 +196,13 @@ test("the card offers its editor", () => {
   assert.equal(Card.getConfigElement().tagName, "chinese-calendar-card-editor");
 });
 
-test("the editor shows calendar pickers and colour fields", () => {
+test("the editor shows only the calendar pickers", () => {
   const editor = new Editor();
   editor.setConfig({});
   const form = editor.children[0];
   assert.equal(form.tagName, "ha-form");
   assert.deepEqual(form.schema.map((field) => field.name),
-    ["holiday_calendars", "event_calendars", "holidayColor", "workdayColor"]);
+    ["holiday_calendars", "event_calendars"]);
   assert.deepEqual(form.schema[0].selector, { entity: { domain: "calendar", multiple: true } });
   assert.equal(form.computeLabel({ name: "holiday_calendars" }), "假期日曆");
 });
@@ -237,8 +235,14 @@ test("the card registers in the card picker", () => {
   assert.equal(entry.name, "中式掛曆");
 });
 
-test("cleared colour fields fall back to the defaults", () => {
-  const card = makeCard({ holidayColor: undefined, workdayColor: "" });
-  assert.equal(card.config.holidayColor, HOLIDAY);
-  assert.equal(card.config.workdayColor, WORKDAY);
+test("the traditional red and green cannot be overridden", () => {
+  const card = makeCard({ holidayColor: "#123456", workdayColor: "#654321" });
+  assert.equal(card.prepareData(new Date(2026, 10, 1)).themeColor, HOLIDAY);
+  assert.equal(card.prepareData(new Date(2026, 10, 2)).themeColor, WORKDAY);
+});
+
+test("a calendar list cleared in the editor falls back to none", () => {
+  const card = makeCard({ holiday_calendars: undefined, event_calendars: "" });
+  assert.deepEqual(card.config.holiday_calendars, []);
+  assert.deepEqual(card.config.event_calendars, []);
 });

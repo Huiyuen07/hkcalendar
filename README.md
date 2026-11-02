@@ -44,10 +44,8 @@ Home Assistant 的中式掛曆卡片，以傳統手撕日曆的樣式顯示公�
 |------|------|--------|
 | `holiday_calendars` | 假期日曆，一個或多個 | 無（只有星期日用假日顏色） |
 | `event_calendars` | 日程日曆，一個或多個 | 無（顯示「無日程」） |
-| `holidayColor` | 假日顏色 | `#CC0000` |
-| `workdayColor` | 工作日顏色 | `#006400` |
 
-宜、忌各顯示頭四項。日曆每 10 分鐘及每日零時重新讀取。
+假日用紅色（`#CC0000`），工作日用綠色（`#006400`）。這是傳統掛曆的顏色，所以不設選項。宜、忌各顯示頭四項。日曆每 10 分鐘及每日零時重新讀取。
 
 ### 第三方授權
 
@@ -111,10 +109,8 @@ All optional.
 |--------|---------|---------|
 | `holiday_calendars` | Holiday calendars, one or more | None (only Sundays use the holiday colour) |
 | `event_calendars` | Event calendars, one or more | None (shows 「無日程」) |
-| `holidayColor` | Holiday colour | `#CC0000` |
-| `workdayColor` | Workday colour | `#006400` |
 
-The card shows the first four favourable and unfavourable items. Calendars are re-read every 10 minutes and at midnight.
+Holidays are red (`#CC0000`) and workdays green (`#006400`). These are the traditional calendar colours, so they are not options. The card shows the first four favourable and unfavourable items. Calendars are re-read every 10 minutes and at midnight.
 
 ### Third-party notice
 

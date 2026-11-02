@@ -3,7 +3,7 @@ import {
   addDays, dayKey, fetchEvents, formatEvents, formatTime12, holidayStatus,
 } from "./calendar-data.js";
 
-const CARD_VERSION = "0.2.0";
+const CARD_VERSION = "0.2.1";
 const ENGLISH_MONTHS = ["January", "February", "March", "April", "May", "June",
                         "July", "August", "September", "October", "November", "December"];
 const CHINESE_MONTHS = ["一月", "二月", "三月", "四月", "五月", "六月",
@@ -14,9 +14,10 @@ const WEEKDAYS = ["星期日   Sunday", "星期一   Monday", "星期二   Tuesd
 const DEFAULTS = {
   holiday_calendars: [],
   event_calendars: [],
-  holidayColor: "#CC0000",
-  workdayColor: "#006400",
 };
+// The traditional calendar red and green are part of the design, so they are not options.
+const HOLIDAY_COLOR = "#CC0000";
+const WORKDAY_COLOR = "#006400";
 const REFRESH_MS = 10 * 60 * 1000;
 // Make-up workdays can be named weeks before or after the holiday that mentions them.
 const HOLIDAY_WINDOW_DAYS = 45;
@@ -138,7 +139,7 @@ class ChineseCalendarCard extends HTMLElement {
         almanac.clash,
       ].filter(Boolean).join(" ｜ "),
       eventSummary: formatEvents(this._events, key),
-      themeColor: holiday.isHoliday ? this.config.holidayColor : this.config.workdayColor,
+      themeColor: holiday.isHoliday ? HOLIDAY_COLOR : WORKDAY_COLOR,
     };
   }
 
@@ -242,14 +243,10 @@ class ChineseCalendarCard extends HTMLElement {
 const EDITOR_SCHEMA = [
   { name: "holiday_calendars", selector: { entity: { domain: "calendar", multiple: true } } },
   { name: "event_calendars", selector: { entity: { domain: "calendar", multiple: true } } },
-  { name: "holidayColor", selector: { text: {} } },
-  { name: "workdayColor", selector: { text: {} } },
 ];
 const EDITOR_LABELS = {
   holiday_calendars: "假期日曆",
   event_calendars: "日程日曆",
-  holidayColor: "假日顏色",
-  workdayColor: "工作日顏色",
 };
 
 class ChineseCalendarCardEditor extends HTMLElement {

@@ -16,6 +16,7 @@
 | D2 | **假期全部交給 HA 內建的 Holiday 整合，或用戶自選的 HA 日曆；卡片不內建假期規則** | 港、台、陸及上百個國家都有人維護，大陸調休已包括在內，資料隨 HA 更新。兩套規則並存會令用戶無所適從 |
 | D3 | **所有日曆文字一律繁體**，以內建對照表轉換，不用 OpenCC | 傳統感覺；lunar-js 輸出的詞彙是有限集合，用小表就能涵蓋 |
 | D4 | **保留英文月份和英文星期作裝飾** | 傳統手撕日曆的特色 |
+| D5 | **假日紅 `#CC0000`、工作日綠 `#006400` 寫死，不設選項** | 傳統掛曆顏色，讓用戶修改反而尷尬 |
 
 ### 資料來源結論
 
@@ -40,7 +41,7 @@
 - [x] **H4 實體全部變可選：** 沒有任何設定也能顯示完整日曆，日期時間取自瀏覽器。不保留舊版相容，舊的實體選項和相關程式碼一併刪除。
 - [x] **H7 假期：** 新選項 `holiday_calendars`。當日有全日事件就是假期，星期日一律是假日；補班日按大陸假期名稱中的日期，改用工作日顏色。不再使用 `workday_entity`。
 - [x] **H8 日程：** 新選項 `event_calendars`，卡片直接讀取當日事件，取代 `input_text`（上限 255 字）、script 和每 5 分鐘一次的 automation。
-- [x] **H5 卡片編輯器：** 用 HA 內建的表單元件揀日曆和顏色，並發出 `config-changed`。註冊 `window.customCards`，令卡片出現在卡片選擇器。
+- [x] **H5 卡片編輯器：** 用 HA 內建的表單元件揀日曆，並發出 `config-changed`。註冊 `window.customCards`，令卡片出現在卡片選擇器。
 
 以下各項會在上面的工作中一併解決：
 - [x] **H11 農曆寫法：** lunar-js 本身就寫「九月廿四」，不再出現「九月大」。
@@ -86,6 +87,7 @@ Last updated: 2026-11-02. The full design for this round is in [`docs/superpower
 | D2 | **Holidays come only from HA's built-in Holiday integration or any calendar the user picks. The card has no holiday rules of its own** | Hong Kong, Taiwan, mainland China and over a hundred other countries are maintained there, mainland make-up workdays included, and the data updates with HA. Two rule sets side by side would leave users unsure which to trust |
 | D3 | **All calendar text in Traditional Chinese**, converted with a built-in table instead of OpenCC | Traditional feel. lunar-js uses a small, fixed vocabulary that a short table covers |
 | D4 | **Keep the English month and weekday as decoration** | A feature of traditional tear-off calendars |
+| D5 | **Holiday red `#CC0000` and workday green `#006400` are fixed, not options** | They are the traditional calendar colours; letting users change them would look out of place |
 
 ### Data sources
 
@@ -110,7 +112,7 @@ Suggested order: H3 → H2 → H4 → H7 → H8 → H5, then the author's migrat
 - [x] **H4 Make all entities optional:** The card shows a full calendar with no configuration, taking date and time from the browser. No backward compatibility: the old entity options and their code are removed.
 - [x] **H7 Holidays:** New `holiday_calendars` option. An all-day event marks the day as a holiday, and Sundays always use the holiday colour. Make-up workdays named in mainland holiday titles use the workday colour. `workday_entity` is no longer used.
 - [x] **H8 Events:** New `event_calendars` option. The card reads today's events directly, replacing `input_text` (255-character limit), the script and the five-minute automation.
-- [x] **H5 Card editor:** Pick calendars and colours with HA's built-in form components, and fire `config-changed`. Register in `window.customCards` so the card appears in the card picker.
+- [x] **H5 Card editor:** Pick calendars with HA's built-in form components, and fire `config-changed`. Register in `window.customCards` so the card appears in the card picker.
 
 Also resolved by the work above:
 - [x] **H11 Lunar wording:** lunar-js writes 「九月廿四」 itself, so 「九月大」 no longer appears.
