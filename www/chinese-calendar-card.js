@@ -227,9 +227,62 @@ class ChineseCalendarCard extends HTMLElement {
     });
   }
 
+  static getConfigElement() {
+    return document.createElement("chinese-calendar-card-editor");
+  }
+
   static getStubConfig() {
     return {};
   }
 }
 
+const EDITOR_SCHEMA = [
+  { name: "holiday_calendars", selector: { entity: { domain: "calendar", multiple: true } } },
+  { name: "event_calendars", selector: { entity: { domain: "calendar", multiple: true } } },
+  { name: "holidayColor", selector: { text: {} } },
+  { name: "workdayColor", selector: { text: {} } },
+];
+const EDITOR_LABELS = {
+  holiday_calendars: "假期日曆",
+  event_calendars: "日程日曆",
+  holidayColor: "假日顏色",
+  workdayColor: "工作日顏色",
+};
+
+class ChineseCalendarCardEditor extends HTMLElement {
+  setConfig(config) {
+    this._config = { ...config };
+    this.ensureForm().data = this._config;
+  }
+
+  set hass(hass) {
+    this.ensureForm().hass = hass;
+  }
+
+  ensureForm() {
+    if (this._form) return this._form;
+    const form = document.createElement("ha-form");
+    form.schema = EDITOR_SCHEMA;
+    form.computeLabel = (field) => EDITOR_LABELS[field.name] ?? field.name;
+    form.addEventListener("value-changed", (event) => {
+      this._config = { ...this._config, ...event.detail.value };
+      this.dispatchEvent(new CustomEvent("config-changed", {
+        detail: { config: this._config }, bubbles: true, composed: true,
+      }));
+    });
+    this.appendChild(form);
+    this._form = form;
+    return form;
+  }
+}
+
 customElements.define("chinese-calendar-card", ChineseCalendarCard);
+customElements.define("chinese-calendar-card-editor", ChineseCalendarCardEditor);
+
+window.customCards = window.customCards || [];
+window.customCards.push({
+  type: "chinese-calendar-card",
+  name: "中式掛曆",
+  description: "傳統手撕日曆：農曆、宜忌、假期及日程",
+  preview: true,
+});

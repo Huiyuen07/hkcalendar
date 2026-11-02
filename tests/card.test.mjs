@@ -3,16 +3,39 @@ import { readFile } from "node:fs/promises";
 import { before, mock, test } from "node:test";
 
 let Card;
+let Editor;
+
+// A stand-in for elements the editor creates, recording listeners and children.
+class FakeElement {
+  constructor(tag) {
+    this.tagName = tag;
+    this.listeners = {};
+    this.children = [];
+    this.dispatched = [];
+  }
+  attachShadow() {}
+  addEventListener(type, fn) {
+    this.listeners[type] = fn;
+  }
+  appendChild(child) {
+    this.children.push(child);
+    return child;
+  }
+  dispatchEvent(event) {
+    this.dispatched.push(event);
+    return true;
+  }
+}
 
 // Load the card with just enough browser globals to reach its logic.
 before(async () => {
-  globalThis.HTMLElement = class {
-    attachShadow() {}
-  };
+  globalThis.HTMLElement = FakeElement;
   globalThis.window = {};
+  globalThis.document = { createElement: (tag) => new FakeElement(tag) };
   globalThis.customElements = {
     define(name, element) {
       if (name === "chinese-calendar-card") Card = element;
+      if (name === "chinese-calendar-card-editor") Editor = element;
     },
   };
   await import("../www/chinese-calendar-card.js");
@@ -169,4 +192,47 @@ test("the card source has no CDN, no fixed paths and no data in innerHTML", asyn
   assert.doesNotMatch(source, /['"`]\/local\//);
   assert.doesNotMatch(source, /opencc|jsdelivr/i);
   assert.equal((source.match(/innerHTML\s*=/g) ?? []).length, 1, "only the static template may use innerHTML");
+});
+
+test("the card offers its editor", () => {
+  assert.equal(Card.getConfigElement().tagName, "chinese-calendar-card-editor");
+});
+
+test("the editor shows calendar pickers and colour fields", () => {
+  const editor = new Editor();
+  editor.setConfig({});
+  const form = editor.children[0];
+  assert.equal(form.tagName, "ha-form");
+  assert.deepEqual(form.schema.map((field) => field.name),
+    ["holiday_calendars", "event_calendars", "holidayColor", "workdayColor"]);
+  assert.deepEqual(form.schema[0].selector, { entity: { domain: "calendar", multiple: true } });
+  assert.equal(form.computeLabel({ name: "holiday_calendars" }), "假期日曆");
+});
+
+test("the editor fires config-changed when the form changes", () => {
+  const editor = new Editor();
+  editor.setConfig({ type: "custom:chinese-calendar-card" });
+  const form = editor.children[0];
+  form.listeners["value-changed"]({ detail: { value: { holiday_calendars: ["calendar.hksar"] } } });
+  const event = editor.dispatched.at(-1);
+  assert.equal(event.type, "config-changed");
+  assert.deepEqual(event.detail.config,
+    { type: "custom:chinese-calendar-card", holiday_calendars: ["calendar.hksar"] });
+  assert.equal(event.bubbles, true);
+  assert.equal(event.composed, true);
+});
+
+test("the editor accepts a config before hass and passes hass on", () => {
+  const editor = new Editor();
+  assert.doesNotThrow(() => editor.setConfig({}));
+  const hass = { states: {} };
+  editor.hass = hass;
+  assert.equal(editor.children.length, 1);
+  assert.equal(editor.children[0].hass, hass);
+});
+
+test("the card registers in the card picker", () => {
+  const entry = window.customCards.find((card) => card.type === "chinese-calendar-card");
+  assert.ok(entry);
+  assert.equal(entry.name, "中式掛曆");
 });
