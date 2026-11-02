@@ -58,8 +58,8 @@
 
 ### 作者環境遷移（本輪完成後；每一步動手前先確認）
 
-- [ ] **H0 切換到新版：** 部署後，把 Lovelace 資源指向 `/local/hkcalendar/chinese-calendar-card.js`，卡片設定改為 `holiday_calendars: [calendar.hksar]` 和日程日曆。
-- [ ] **H00 清理舊依賴：** 新卡運作正常後才移除以下項目，移除前先確認沒有其他地方用到：
+- [x] **H0 切換到新版：** 部署後，把 Lovelace 資源指向 `/local/hkcalendar/chinese-calendar-card.js`，卡片設定改為 `holiday_calendars: [calendar.hksar]` 和日程日曆。
+- [x] **H00 清理舊依賴：** 新卡運作正常後才移除以下項目，移除前先確認沒有其他地方用到：
   - `tgtg` 整合：這是老黃曆的舊副本，domain 與 Too Good To Go 整合相撞
   - 已安裝但沒有設定的 HACS 版老黃曆
   - 四個 template 實體
@@ -129,8 +129,8 @@ Also resolved by the work above:
 
 ### Author's own migration (after this round; confirm before each step)
 
-- [ ] **H0 Switch to this version:** After deploying, point the Lovelace resource at `/local/hkcalendar/chinese-calendar-card.js` and set `holiday_calendars: [calendar.hksar]` plus the events calendar.
-- [ ] **H00 Remove old dependencies:** Only once the new card works, and only after checking nothing else uses them, remove:
+- [x] **H0 Switch to this version:** After deploying, point the Lovelace resource at `/local/hkcalendar/chinese-calendar-card.js` and set `holiday_calendars: [calendar.hksar]` plus the events calendar.
+- [x] **H00 Remove old dependencies:** Only once the new card works, and only after checking nothing else uses them, remove:
   - the `tgtg` integration, an old copy of the almanac whose domain collides with the Too Good To Go integration
   - the HACS almanac, which is installed but not configured
   - the four template entities
