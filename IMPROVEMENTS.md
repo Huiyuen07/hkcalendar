@@ -4,122 +4,138 @@
 
 ## 中文
 
-目標：只裝一張卡就能用，不用另裝整合、寫 template 或依賴外部服務。
+目標：加入卡片就能用，資料不會因為某個網站或整合停止服務而消失，用戶不需要自己建立 helper、template、script 或 automation。所有地區一律顯示繁體中文。
 
-評估日期：2026-10-31。標明「實測」的項目，都是當日驗證過的。
+最後更新：2026-11-02。本輪的完整設計見 [`docs/superpowers/specs/2026-11-02-offline-calendar-design.md`](docs/superpowers/specs/2026-11-02-offline-calendar-design.md)。
+
+### 已作的決定
+
+| 編號 | 決定 | 原因 |
+|------|------|------|
+| D1 | **宜忌和農曆改用打包入卡的 [`lunar-javascript`](https://github.com/6tail/lunar-javascript) 1.7.7（MIT）** | 在本機計算，沒有期限（實測 1901 至 3000 年都能算），不需要網絡或定期更新。gzip 後約 112 KB。作者不在意宜忌派別，穩定比內容一致更重要 |
+| D2 | **假期全部交給 HA 內建的 Holiday 整合，或用戶自選的 HA 日曆；卡片不內建假期規則** | 港、台、陸及上百個國家都有人維護，大陸調休已包括在內，資料隨 HA 更新。兩套規則並存會令用戶無所適從 |
+| D3 | **所有日曆文字一律繁體**，以內建對照表轉換，不用 OpenCC | 傳統感覺；lunar-js 輸出的詞彙是有限集合，用小表就能涵蓋 |
+| D4 | **保留英文月份和英文星期作裝飾** | 傳統手撕日曆的特色 |
 
 ### 資料來源結論
 
-| 資料 | 最可靠來源 | 限制 |
-|------|-----------|------|
-| 農曆日期 | [天文台 `lunardate.php`](https://data.weather.gov.hk/weatherAPI/doc/HKO_Open_Data_API_Documentation_tc.pdf)：官方、免 key、實測允許跨站讀取 | 只支援 2023-01-01 至本年＋2 年，範圍外回傳純文字 `Not Available` |
-| 公眾假期 | [1823 JSON](https://www.1823.gov.hk/common/ical/tc.json)：官方 | 實測沒有 CORS 標頭，瀏覽器卡片不能直接讀；目前涵蓋 2025–2027 |
-| 宜忌 | **沒有官方 API**，只能選定一套算法 | 不同來源內容差異很大，見 D1 |
-
-實測農曆日期：在 40 個抽樣日（含月頭月尾）中，`lunar-javascript` 與天文台完全一致；`cnlunar` 與 `lunar-javascript` 在 2026–2027 共 730 日的農曆日和沖煞也完全一致。所以農曆可離線計算，天文台適合作校對。
-
-### 待決定
-
-**D1 宜忌資料來源（影響最大，請先決定）**
-
-實測 `cnlunar` 與 `lunar-javascript`：730 日中，宜完全相同的日數是 0，平均重疊度（Jaccard）宜 0.106、忌 0.047。換來源等於換內容，宜忌沒有客觀對錯，要選的是用哪一派。
-
-| 選項 | 優點 | 代價 |
+| 資料 | 來源 | 備註 |
 |------|------|------|
-| A. 保留老黃曆整合 | 內容不變 | 依賴不減，違背目標 |
-| B. 把 [`lunar-javascript`](https://github.com/6tail/lunar-javascript) 打包入卡 | 免網絡、MIT、約 580 KB | 宜忌內容全換；作者自述規則是從網站數據歸納，僅供參考 |
-| **C. 用 [`cnlunar`](https://github.com/OPN48/cnLunar) 預先生成資料隨卡發佈（建議）** | 免網絡；內容與現在同源；出處是《欽定協紀辨方書》；十年資料估計 gzip 後約 75 KB | 需要生成腳本，並定期更新資料 |
+| 農曆、宜忌、沖煞、節氣、農曆節日 | lunar-javascript，打包入卡 | 抽樣 40 日的農曆與天文台完全一致。天文台 [`lunardate.php`](https://data.weather.gov.hk/weatherAPI/doc/HKO_Open_Data_API_Documentation_tc.pdf) 只適合用來校對，不在卡片運作時使用 |
+| 公眾假期 | HA Holiday 整合（底層是 `holidays` 函式庫） | 香港選 `zh_HK`、台灣和大陸選 `zh_TW` 可取得繁體名稱。大陸假期的名稱註明補班日期，例如「放假日（2026-02-14 補班）」 |
+| 日程 | 用戶揀選的 HA 日曆 | 卡片直接讀取 |
 
-付費的第三方黃曆 API 沒有實測：它們需要 key，與減少依賴的目標相反。
+宜忌內容的比較（2026–2027 年共 730 日）：
+- 舊的老黃曆整合內部用的是 `cnlunar`，再刪走 44 個古代官府用語，最多留 10 項。
+- 它的過濾規則有一個 bug：`开市`、`开仓`、`开渠`、`开张` 幾乎永遠不會出現。
+- 它與 lunar-js 的重疊度（Jaccard）只有：宜 0.10、忌 0.07。
+- 所以改用 lunar-js 之後，宜忌內容會全部改變，這是預期之內的。
 
-### P0：公開發佈前必做
+### 本輪：免設定、離線（見設計文件）
 
-- [ ] **H1 授權和出處：** 選定授權並加入 `LICENSE`。確認卡片是否參考過他人作品，有的話要註明。
-- [ ] **H2 移除 OpenCC CDN：** 實測 jsDelivr 被擋時，卡片完全不渲染，也沒有錯誤提示。D1 選 C 後資料本身是繁體，可整個移除。
-- [ ] **H3 內建資料：** 實作 D1，同時覆蓋農曆、沖煞、節氣和農曆節日，CI 用天文台 API 校對。
-- [ ] **H4 實體全部變可選：** 沒設定任何實體也能運作，日期時間由瀏覽器提供。現在要裝一個自訂整合、三個內建整合、四個 template、一個 script 和一個 automation。
-- [ ] **H5 可用的卡片編輯器：** 現有編輯器不發出 `config-changed`，改了也存不到。同時要註冊 `window.customCards`，否則卡片選擇器看不到它。
+建議次序：H3 → H2 → H4 → H7 → H8 → H5，完成後做作者環境遷移。
+
+- [ ] **H3 內建資料：** 打包 lunar-js，提供農曆、宜忌、沖煞、節氣和農曆節日，並附上它的 MIT 授權聲明。黃金測試鎖定固定日期的輸出。
+- [ ] **H2 移除 OpenCC CDN：** 實測 jsDelivr 被擋時，卡片完全不顯示，也沒有錯誤提示。改用內建繁體對照表，並以測試掃描 1900 至 2100 年，確保沒有遺漏的簡體字。
+- [ ] **H4 實體全部變可選：** 沒有任何設定也能顯示完整日曆，日期時間取自瀏覽器。舊版的實體選項一律略過，不會報錯。
+- [ ] **H7 假期：** 新選項 `holiday_calendars`。當日有全日事件就是假期，星期日一律是假日；補班日按大陸假期名稱中的日期，改用工作日顏色。不再使用 `workday_entity`。
+- [ ] **H8 日程：** 新選項 `event_calendars`，卡片直接讀取當日事件，取代 `input_text`（上限 255 字）、script 和每 5 分鐘一次的 automation。
+- [ ] **H5 卡片編輯器：** 用 HA 內建的表單元件揀日曆和顏色，並發出 `config-changed`。註冊 `window.customCards`，令卡片出現在卡片選擇器。
+
+以下各項會在上面的工作中一併解決：
+- [ ] **H11 農曆寫法：** lunar-js 本身就寫「九月廿四」，不再出現「九月大」。
+- [ ] **H12 宜忌顯示不全：** 全部顯示，不截斷。單日最多 31 項，項目多時縮細字、分欄或讓區塊變高。
+- [ ] **H13 時區問題：** 不再用 `new Date('YYYY-MM-DD')`。`npm test` 移除固定的 `TZ`，並在非香港時區下通過。
+- [ ] **H14 改用 `textContent`：** 所有由資料產生的文字都不再經 `innerHTML` 寫入。
+
+### 下一輪
+
+- [ ] **H1 本專案授權：** 選定授權並加入 `LICENSE`。
 - [ ] **H6 CI 和 HACS：** 加入 GitHub Actions 測試、HACS 驗證和截圖。
-
-### P1：顯示和體驗
-
-- [ ] **H7 假期判斷：** 直接讀 Holiday 整合的 calendar 實體，沒裝時只把星期日視為假日。1823 沒有 CORS，不能由卡片直接讀取。
-- [ ] **H8 日程改為直接讀日曆：** 由卡片呼叫 HA calendar API，取代 `input_text`（上限 255 字）、script 和每 5 分鐘的 automation。
 - [ ] **H9 字型：** 優先用系統字型，Google Fonts 改為可選，避免離線環境等待載入。
 - [ ] **H10 響應式和深色模式：** 現在固定白底和 180px 日期字，闊度上限 400px。
-- [ ] **H11 農曆顯示：** 現在顯示「九月大廿二」，天文台寫法是「九月廿二」，香港用戶較熟悉後者。
-- [ ] **H12 宜忌顯示不全：** 老黃曆整合只輸出前 10 項，卡片區塊又固定 80px 高。需要決定顯示規則。
 
-### P2：程式質素
+### 作者環境遷移（本輪完成後；每一步動手前先確認）
 
-- [ ] **H13 時區問題：** `new Date('YYYY-MM-DD')` 以 UTC 解析。實測在 `America/New_York` 下差一日，香港不受影響。修好後可移除 `npm test` 內固定的 `TZ`。
-- [ ] **H14 改用 `textContent`：** 宜忌和農曆文字目前以 `innerHTML` 寫入。
-- [ ] **H15 英文介面：** 讓海外用戶也能使用。
+- [ ] **H0 切換到新版：** 部署後，把 Lovelace 資源指向 `/local/hkcalendar/chinese-calendar-card.js`，卡片設定改為 `holiday_calendars: [calendar.hksar]` 和日程日曆。
+- [ ] **H00 清理舊依賴：** 新卡運作正常後才移除以下項目，移除前先確認沒有其他地方用到：
+  - `tgtg` 整合：這是老黃曆的舊副本，domain 與 Too Good To Go 整合相撞
+  - 已安裝但沒有設定的 HACS 版老黃曆
+  - 四個 template 實體
+  - `input_text.calendar`、`today_s_itinerary` script 和相關 automation
+- [x] ~~**H000 農曆節日：**~~ `calendar.nong_li` 回傳 404 的問題不用處理，因為農曆節日已改由 lunar-js 提供（H3）。
 
-### 作者環境遷移
+### 已取消
 
-- [ ] **H0 切換到新版：** 把 Lovelace 資源指向 `/local/hkcalendar/chinese-calendar-card.js`。
-- [ ] **H00 清理老黃曆整合：** 現時使用的是更名為 `tgtg` 的舊副本（2025.01.17），這個 domain 與 Too Good To Go 整合相撞；HACS 版已安裝但沒有設定。D1 定案後兩者一併處理。
-- [ ] **H000 農曆節日：** `calendar.nong_li` 實測回傳 404，所以卡片現在不會顯示農曆節日。H3 完成後會解決。
+- ~~**H15 英文介面**~~：與「一律繁體」（D3）矛盾。
+- ~~**卡片內建港台陸假期規則、讀取 1823 JSON**~~：由 D2 取代。
 
 ---
 
 ## English
 
-Goal: install one card and it works, with no extra integrations, templates or outside services.
+Goal: add the card and it works. No data should disappear because a website or integration stops working, and users should never have to build helpers, templates, scripts or automations. Every region sees Traditional Chinese.
 
-Assessed on 2026-10-31. Items marked "tested" were verified that day.
+Last updated: 2026-11-02. The full design for this round is in [`docs/superpowers/specs/2026-11-02-offline-calendar-design.md`](docs/superpowers/specs/2026-11-02-offline-calendar-design.md) (Chinese).
 
-### Data source findings
+### Decisions
 
-| Data | Most reliable source | Limits |
-|------|---------------------|--------|
-| Lunar date | [HKO `lunardate.php`](https://data.weather.gov.hk/weatherAPI/doc/HKO_Open_Data_API_Documentation_tc.pdf): official, no key, cross-origin reads allowed when tested | Only 2023-01-01 to the end of the current year + 2; outside that it returns the plain text `Not Available` |
-| Public holidays | [1823 JSON](https://www.1823.gov.hk/common/ical/tc.json): official | No CORS header when tested, so a browser card cannot read it directly; currently covers 2025–2027 |
-| Almanac (宜／忌) | **No official API.** You have to choose a method | Sources differ widely. See D1 |
+| ID | Decision | Reason |
+|----|----------|--------|
+| D1 | **Almanac and lunar data from [`lunar-javascript`](https://github.com/6tail/lunar-javascript) 1.7.7 (MIT), bundled in the card** | Computed locally with no end date (tested from 1901 to 3000), no network and no data updates. About 112 KB gzipped. The author has no preference between almanac traditions; stability matters more than keeping today's content |
+| D2 | **Holidays come only from HA's built-in Holiday integration or any calendar the user picks. The card has no holiday rules of its own** | Hong Kong, Taiwan, mainland China and over a hundred other countries are maintained there, mainland make-up workdays included, and the data updates with HA. Two rule sets side by side would leave users unsure which to trust |
+| D3 | **All calendar text in Traditional Chinese**, converted with a built-in table instead of OpenCC | Traditional feel. lunar-js uses a small, fixed vocabulary that a short table covers |
+| D4 | **Keep the English month and weekday as decoration** | A feature of traditional tear-off calendars |
 
-Lunar date testing: across 40 sampled days, including month boundaries, `lunar-javascript` matched HKO exactly. `cnlunar` and `lunar-javascript` also agreed on lunar day and zodiac clash on all 730 days of 2026–2027. Lunar dates can therefore be computed offline, with HKO used as a cross-check.
+### Data sources
 
-### Decision needed
+| Data | Source | Notes |
+|------|--------|-------|
+| Lunar date, almanac, zodiac clash, solar terms, lunar festivals | lunar-javascript, bundled | Matched HKO exactly on 40 sampled days. HKO [`lunardate.php`](https://data.weather.gov.hk/weatherAPI/doc/HKO_Open_Data_API_Documentation_tc.pdf) is for cross-checking only, never used at runtime |
+| Public holidays | HA Holiday integration (built on the `holidays` library) | Choose `zh_HK` for Hong Kong and `zh_TW` for Taiwan and mainland China to get Traditional names. Mainland holiday names state the make-up workday, e.g. 「放假日（2026-02-14 補班）」 |
+| Events | HA calendars chosen by the user | Read directly by the card |
 
-**D1 Almanac data source (the biggest decision; settle this first)**
+Almanac comparison over 730 days (2026–2027):
+- The old almanac integration uses `cnlunar` internally, then drops 44 imperial-court terms and keeps at most 10 items.
+- Its filter has a bug that almost always removes `开市`, `开仓`, `开渠` and `开张`.
+- Its overlap (Jaccard) with lunar-js is only 0.10 for favourable and 0.07 for unfavourable.
+- Moving to lunar-js therefore changes the almanac content entirely, as expected.
 
-Tested `cnlunar` against `lunar-javascript` over 730 days: the favourable list was identical on 0 days, and mean overlap (Jaccard) was 0.106 for favourable and 0.047 for unfavourable. Changing source means changing the content. The almanac has no objective right answer, so this is a choice of tradition.
+### This round: no setup, offline (see the design document)
 
-| Option | Benefits | Costs |
-|--------|----------|-------|
-| A. Keep the almanac integration | Content unchanged | Dependencies stay, which defeats the goal |
-| B. Bundle [`lunar-javascript`](https://github.com/6tail/lunar-javascript) in the card | No network, MIT, about 580 KB | All almanac content changes; the author says the rules were inferred from website data and are for reference only |
-| **C. Pre-generate data with [`cnlunar`](https://github.com/OPN48/cnLunar) and ship it with the card (recommended)** | No network; same origin as today's content; based on the *Qinding Xieji Bianfang Shu*; ten years estimated at about 75 KB gzipped | Needs a generator script and periodic data updates |
+Suggested order: H3 → H2 → H4 → H7 → H8 → H5, then the author's migration.
 
-Paid third-party almanac APIs were not tested: they need a key, which works against reducing dependencies.
+- [ ] **H3 Built-in data:** Bundle lunar-js for lunar date, almanac, zodiac clash, solar terms and lunar festivals, with its MIT notice. Golden tests pin the output for fixed dates.
+- [ ] **H2 Remove the OpenCC CDN:** Tested: with jsDelivr blocked, the card renders nothing and shows no error. Replace it with a built-in Traditional Chinese table, and add a test that scans 1900–2100 for any missed Simplified characters.
+- [ ] **H4 Make all entities optional:** The card shows a full calendar with no configuration, taking date and time from the browser. Old entity options are ignored without error.
+- [ ] **H7 Holidays:** New `holiday_calendars` option. An all-day event marks the day as a holiday, and Sundays always use the holiday colour. Make-up workdays named in mainland holiday titles use the workday colour. `workday_entity` is no longer used.
+- [ ] **H8 Events:** New `event_calendars` option. The card reads today's events directly, replacing `input_text` (255-character limit), the script and the five-minute automation.
+- [ ] **H5 Card editor:** Pick calendars and colours with HA's built-in form components, and fire `config-changed`. Register in `window.customCards` so the card appears in the card picker.
 
-### P0: required before public release
+Also resolved by the work above:
+- [ ] **H11 Lunar wording:** lunar-js writes 「九月廿四」 itself, so 「九月大」 no longer appears.
+- [ ] **H12 Truncated almanac:** Show every item without truncating. A day can have up to 31; shrink the text, add columns or let the area grow.
+- [ ] **H13 Time zone bug:** Stop using `new Date('YYYY-MM-DD')`. Remove the pinned `TZ` from `npm test` and pass in a non-Hong Kong time zone.
+- [ ] **H14 Use `textContent`:** No data-derived text goes through `innerHTML`.
 
-- [ ] **H1 License and attribution:** Choose a license and add `LICENSE`. Check whether the card drew on anyone else's work, and credit it if so.
-- [ ] **H2 Remove the OpenCC CDN:** Tested: with jsDelivr blocked, the card renders nothing and shows no error. With D1 option C the data is already Traditional Chinese, so OpenCC can go entirely.
-- [ ] **H3 Built-in data:** Implement D1, covering lunar date, zodiac clash, solar terms and lunar festivals, with CI checking against the HKO API.
-- [ ] **H4 Make all entities optional:** The card should work with no entities set, taking date and time from the browser. Today it needs one custom integration, three built-in integrations, four templates, a script and an automation.
-- [ ] **H5 A working card editor:** The current editor never fires `config-changed`, so edits cannot be saved. The card must also register in `window.customCards` to appear in the card picker.
+### Next round
+
+- [ ] **H1 Project license:** Choose a license and add `LICENSE`.
 - [ ] **H6 CI and HACS:** Add GitHub Actions tests, HACS validation and screenshots.
-
-### P1: display and experience
-
-- [ ] **H7 Holiday detection:** Read the Holiday integration's calendar entity directly, and treat only Sundays as holidays when it is absent. 1823 has no CORS, so the card cannot read it directly.
-- [ ] **H8 Read calendars directly:** Have the card call the HA calendar API, replacing `input_text` (255 character limit), the script and the five-minute automation.
 - [ ] **H9 Fonts:** Prefer system fonts and make Google Fonts optional, so offline setups do not wait on it.
 - [ ] **H10 Responsive layout and dark mode:** The card currently has a fixed white background, a 180px date and a 400px maximum width.
-- [ ] **H11 Lunar date wording:** The card shows 「九月大廿二」, while HKO writes 「九月廿二」, which is more familiar in Hong Kong.
-- [ ] **H12 Truncated almanac:** The integration only outputs the first 10 items, and the card's area is fixed at 80px high. A display rule is needed.
 
-### P2: code quality
+### Author's own migration (after this round; confirm before each step)
 
-- [ ] **H13 Time zone bug:** `new Date('YYYY-MM-DD')` parses as UTC. Tested: under `America/New_York` the date is one day off. Hong Kong is unaffected. Once fixed, remove the pinned `TZ` from `npm test`.
-- [ ] **H14 Use `textContent`:** Almanac and lunar text is currently written with `innerHTML`.
-- [ ] **H15 English interface:** Make the card usable for non-Chinese readers.
+- [ ] **H0 Switch to this version:** After deploying, point the Lovelace resource at `/local/hkcalendar/chinese-calendar-card.js` and set `holiday_calendars: [calendar.hksar]` plus the events calendar.
+- [ ] **H00 Remove old dependencies:** Only once the new card works, and only after checking nothing else uses them, remove:
+  - the `tgtg` integration, an old copy of the almanac whose domain collides with the Too Good To Go integration
+  - the HACS almanac, which is installed but not configured
+  - the four template entities
+  - `input_text.calendar`, the `today_s_itinerary` script and its automation
+- [x] ~~**H000 Lunar festivals:**~~ The 404 from `calendar.nong_li` needs no fix, because lunar festivals now come from lunar-js (H3).
 
-### Author's own migration
+### Dropped
 
-- [ ] **H0 Switch to this version:** Point the Lovelace resource at `/local/hkcalendar/chinese-calendar-card.js`.
-- [ ] **H00 Clean up the almanac integration:** The active install is an old copy renamed to `tgtg` (2025.01.17), a domain that collides with the Too Good To Go integration. The HACS version is installed but not configured. Deal with both once D1 is settled.
-- [ ] **H000 Lunar festivals:** `calendar.nong_li` returned 404 when tested, so the card shows no lunar festivals today. H3 resolves this.
+- ~~**H15 English interface**~~: conflicts with all-Traditional-Chinese text (D3).
+- ~~**Built-in Hong Kong, Taiwan and mainland holiday rules, and reading the 1823 JSON**~~: replaced by D2.
