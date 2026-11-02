@@ -8,3 +8,15 @@ test("exports Solar without leaking globals", () => {
   ]);
   assert.equal(globalThis.Solar, undefined);
 });
+
+test("still exports Solar when the page has an AMD loader", async () => {
+  const define = () => {};
+  define.amd = {};
+  globalThis.define = define;
+  try {
+    const lib = await import("../www/lunar-lib.js?amd");
+    assert.equal(typeof lib.Solar?.fromYmd, "function");
+  } finally {
+    delete globalThis.define;
+  }
+});

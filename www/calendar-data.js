@@ -62,11 +62,14 @@ export function formatEvents(events, key) {
 }
 
 export async function fetchEvents(hass, entityIds, start, end) {
-  if (!entityIds?.length) return [];
+  // YAML may give a single id as a plain string.
+  const ids = [].concat(entityIds ?? []).filter(Boolean);
+  if (ids.length === 0) return [];
   const range = `start=${encodeURIComponent(start.toISOString())}&end=${encodeURIComponent(end.toISOString())}`;
-  const results = await Promise.all(entityIds.map(async (id) => {
+  const results = await Promise.all(ids.map(async (id) => {
     try {
-      return await hass.callApi("GET", `calendars/${id}?${range}`);
+      const events = await hass.callApi("GET", `calendars/${id}?${range}`);
+      return Array.isArray(events) ? events : [];
     } catch (err) {
       console.error(`chinese-calendar-card: 無法讀取日曆 ${id}`, err);
       return [];

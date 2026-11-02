@@ -1,6 +1,6 @@
 // Generated from lunar-javascript 1.7.7 (MIT). Do not edit. Run: npm run build:lunar
 const root = {};
-(function () {
+(function (define, module) {
 ;(function(root,factory){
   if (typeof define==='function'&&define.amd){
     define(factory);

@@ -10,10 +10,11 @@ const source = await readFile(new URL("lunar.js", pkgDir), "utf8");
 
 // The UMD wrapper assigns its exports to `this` when there is no AMD or
 // CommonJS loader, so calling it with a private object keeps globals clean.
+// Shadowing `define` and `module` keeps a page-level AMD loader from taking over.
 const wrapped = [
   `// Generated from lunar-javascript ${version} (MIT). Do not edit. Run: npm run build:lunar`,
   "const root = {};",
-  "(function () {",
+  "(function (define, module) {",
   source,
   "}).call(root);",
   "export const { Solar } = root;",

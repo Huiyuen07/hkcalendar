@@ -66,7 +66,10 @@ class ChineseCalendarCard extends HTMLElement {
   }
 
   setConfig(config) {
-    this.config = { ...DEFAULTS, ...config };
+    // A field cleared in the editor arrives as undefined or "", which must not hide the default.
+    const given = Object.fromEntries(
+      Object.entries(config ?? {}).filter(([, value]) => value !== undefined && value !== ""));
+    this.config = { ...DEFAULTS, ...given };
     this._lastRefresh = 0;
     this.render();
   }

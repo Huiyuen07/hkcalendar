@@ -236,3 +236,9 @@ test("the card registers in the card picker", () => {
   assert.ok(entry);
   assert.equal(entry.name, "中式掛曆");
 });
+
+test("cleared colour fields fall back to the defaults", () => {
+  const card = makeCard({ holidayColor: undefined, workdayColor: "" });
+  assert.equal(card.config.holidayColor, HOLIDAY);
+  assert.equal(card.config.workdayColor, WORKDAY);
+});

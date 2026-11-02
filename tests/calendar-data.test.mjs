@@ -131,3 +131,14 @@ test("fetchEvents with no calendars does not call the API", async () => {
   assert.deepEqual(await fetchEvents(hass, [], new Date(), new Date()), []);
   assert.equal(called, false);
 });
+
+test("fetchEvents accepts a single calendar id as a string", async () => {
+  const hass = { callApi: async () => [allDay("A", "2026-11-02", "2026-11-03")] };
+  const events = await fetchEvents(hass, "calendar.a", new Date(), new Date());
+  assert.deepEqual(events.map((e) => e.summary), ["A"]);
+});
+
+test("fetchEvents treats a non-array response as no events", async () => {
+  const hass = { callApi: async () => ({ message: "odd" }) };
+  assert.deepEqual(await fetchEvents(hass, ["calendar.a"], new Date(), new Date()), []);
+});
