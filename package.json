@@ -5,6 +5,10 @@
   "description": "Chinese wall calendar card for Home Assistant, aimed at Hong Kong users",
   "type": "module",
   "scripts": {
-    "test": "TZ=Asia/Hong_Kong node --test"
+    "test": "TZ=Asia/Hong_Kong node --test",
+    "build:lunar": "node scripts/build-lunar.mjs"
+  },
+  "devDependencies": {
+    "lunar-javascript": "1.7.7"
   }
 }
