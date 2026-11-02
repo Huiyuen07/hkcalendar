@@ -4,56 +4,54 @@
 
 ## 中文
 
-Home Assistant 的中式掛曆卡片，以傳統月曆頁的樣式顯示公曆、農曆、宜忌、當日資訊和日程。假期與星期日會轉為假日顏色。
+Home Assistant 的中式掛曆卡片，以傳統手撕日曆的樣式顯示公曆、農曆、宜忌、沖煞、節氣、農曆節日、假期和當日日程。假期與星期日會轉為假日顏色。所有日曆文字一律以繁體中文顯示，英文月份和星期作為裝飾保留。
 
-目前這張卡片只負責顯示，資料要由其他整合和 template 提供。減少這些依賴是下一階段的重點，見 [IMPROVEMENTS.md](IMPROVEMENTS.md)。
+### 不用設定也能用
 
-### 依賴
+農曆、宜忌、沖煞、節氣和農曆節日都在卡片內計算，不需要網絡，也沒有年份限制。加入卡片後，不設定任何選項也會顯示完整日曆。
 
-| 用途 | 來源 | 必要 |
-|------|------|------|
-| 宜忌、農曆、沖煞 | [ha_laohuangli](https://github.com/knoop7/ha_laohuangli)（HACS） | 是 |
-| 日期、時間 | Time & Date 整合（`sensor.date`、`sensor.time`） | 是 |
-| 公眾假期 | Holiday 整合，地區選香港 | 建議 |
-| 工作日判斷 | Workday 整合 | 建議 |
-| 農曆年、農曆日期、當日文字 | `examples/helpers.yaml` | 是 |
-| 滾動日程 | `input_text.calendar`，加上 `examples/today-itinerary.yaml` | 是 |
-| 簡轉繁 | 瀏覽器從 jsDelivr 載入 `opencc-js` | 是 |
-| 字型 | Google Fonts 的 Noto Sans TC | 否 |
+以下兩項是可選的：
 
-> `examples/helpers.yaml` 的實體名稱來自作者的環境，該環境用的是老黃曆整合的舊版更名副本。改用目前的 HACS 版本時，實體名稱未經驗證，請按實際名稱調整。
+| 用途 | 來源 |
+|------|------|
+| 公眾假期 | HA 內建的 [Holiday 整合](https://www.home-assistant.io/integrations/holiday/)，或任何日曆 |
+| 當日日程 | 任何 HA 日曆，例如 Google 日曆或本地日曆 |
+
+**假期設定：** 在「設定 → 裝置與服務」加入 Holiday 整合，揀選地區，語言請選繁體：香港選 `zh_HK`，台灣和中國大陸選 `zh_TW`。之後在卡片編輯器揀選它建立的日曆。
+
+- 當日在所揀日曆中有全日事件，就是假期。
+- 大陸的補班日（例如「放假日（2026-02-14 補班）」所指的日子）會使用工作日顏色。
+- 其他地區的用戶可以揀選該地區的 Holiday 日曆，或任何自訂日曆。
 
 ### 安裝
 
-1. 安裝上表的整合，並加入 `examples/` 內的 helper 和 script。
-2. 部署卡片：
+1. 部署卡片：
 
    ```bash
    ./deploy.sh <ssh-host>
    ```
 
-   沒有 SSH 的話，把 `www/` 內的檔案複製到 `/config/www/hkcalendar/` 即可。
+   沒有 SSH 的話，把 `www/` 內**所有**檔案複製到 `/config/www/hkcalendar/`。卡片會以 JS 檔的位置為基準載入同目錄的其他檔案，所以它們必須放在一起。
 
-3. 在「設定 → 儀表板 → 資源」加入 `/local/hkcalendar/chinese-calendar-card.js`，類型選 JavaScript 模組。
-4. 在 dashboard 加入卡片，內容見 `examples/lovelace-card.yaml`。
-
-CSS 會以 JS 檔的位置為基準載入，所以 `.js` 和 `.css` 必須放在同一目錄。
+2. 在「設定 → 儀表板 → 資源」加入 `/local/hkcalendar/chinese-calendar-card.js`，類型選 JavaScript 模組。
+3. 在 dashboard 加入「中式掛曆」卡片，然後在編輯器揀選日曆。YAML 寫法見 `examples/lovelace-card.yaml`。
 
 ### 卡片選項
 
+全部可選。
+
 | 選項 | 說明 | 預設值 |
 |------|------|--------|
-| `date_entity` | 日期實體，格式 `YYYY-MM-DD` | 必填 |
-| `time_entity` | 時間實體，格式 `HH:MM` | 必填 |
-| `lunar_year_entity` | 農曆年 | 必填 |
-| `lunar_entity` | 農曆日期 | 必填 |
-| `yi_entity` | 宜，以空格分隔 | 必填 |
-| `ji_entity` | 忌，以空格分隔 | 必填 |
-| `rolling_text_entity` | 滾動日程文字 | 必填 |
-| `today_entity` | 當日文字 | 必填 |
-| `workday_entity` | 工作日實體，`off` 時使用假日顏色 | 可選 |
+| `holiday_calendars` | 假期日曆，一個或多個 | 無（只有星期日用假日顏色） |
+| `event_calendars` | 日程日曆，一個或多個 | 無（顯示「無日程」） |
 | `holidayColor` | 假日顏色 | `#CC0000` |
 | `workdayColor` | 工作日顏色 | `#006400` |
+
+宜、忌各顯示頭四項。日曆每 10 分鐘及每日零時重新讀取。
+
+### 第三方授權
+
+農曆和宜忌由 [lunar-javascript](https://github.com/6tail/lunar-javascript) 1.7.7 計算，以 MIT 授權隨卡附上，見 `www/lunar-javascript.LICENSE`。
 
 ### 開發
 
@@ -61,62 +59,66 @@ CSS 會以 JS 檔的位置為基準載入，所以 `.js` 和 `.css` 必須放在
 npm test
 ```
 
-只需 Node.js 22 或以上，沒有其他依賴。測試固定使用香港時區（見 IMPROVEMENTS.md 的 H13）。
+只需 Node.js 22 或以上。測試會在本機時區和 `America/New_York` 各跑一次。
+
+`www/lunar-lib.js` 是生成檔。要重新生成時執行：
+
+```bash
+npm install && npm run build:lunar
+```
 
 ---
 
 ## English
 
-A Chinese wall calendar card for Home Assistant. It shows the Gregorian and lunar dates, daily almanac (宜／忌), daily notes and today's events in the style of a traditional calendar page. Holidays and Sundays use the holiday colour.
+A Chinese wall calendar card for Home Assistant. In the style of a traditional tear-off calendar, it shows the Gregorian and lunar dates, the daily almanac (宜／忌), zodiac clash, solar terms, lunar festivals, holidays and today's events. Holidays and Sundays use the holiday colour. All calendar text is in Traditional Chinese, with the English month and weekday kept as decoration.
 
-For now the card only displays data, which must come from other integrations and templates. Reducing those dependencies is the next priority. See [IMPROVEMENTS.md](IMPROVEMENTS.md).
+### Works with no setup
 
-### Dependencies
+The lunar date, almanac, zodiac clash, solar terms and lunar festivals are computed inside the card, with no network and no end year. Add the card and it shows a full calendar without any options.
 
-| Purpose | Source | Required |
-|---------|--------|----------|
-| Almanac, lunar date, zodiac clash | [ha_laohuangli](https://github.com/knoop7/ha_laohuangli) (HACS) | Yes |
-| Date and time | Time & Date integration (`sensor.date`, `sensor.time`) | Yes |
-| Public holidays | Holiday integration, set to Hong Kong | Recommended |
-| Workday detection | Workday integration | Recommended |
-| Lunar year, lunar date, daily text | `examples/helpers.yaml` | Yes |
-| Scrolling events | `input_text.calendar` plus `examples/today-itinerary.yaml` | Yes |
-| Simplified to Traditional Chinese | `opencc-js`, loaded by the browser from jsDelivr | Yes |
-| Font | Noto Sans TC from Google Fonts | No |
+Two things are optional:
 
-> The entity names in `examples/helpers.yaml` come from the author's setup, which uses an older, renamed copy of the almanac integration. They have not been verified against the current HACS release, so adjust them to match your entities.
+| Purpose | Source |
+|---------|--------|
+| Public holidays | HA's built-in [Holiday integration](https://www.home-assistant.io/integrations/holiday/), or any calendar |
+| Today's events | Any HA calendar, such as Google Calendar or a local calendar |
+
+**Holidays:** Under Settings → Devices & services, add the Holiday integration, choose your region and pick a Traditional Chinese language: `zh_HK` for Hong Kong, `zh_TW` for Taiwan and mainland China. Then pick the calendar it creates in the card editor.
+
+- A day with an all-day event in a chosen calendar is a holiday.
+- Mainland make-up workdays, such as the day named in 「放假日（2026-02-14 補班）」, use the workday colour.
+- Users elsewhere can pick their region's Holiday calendar or any calendar of their own.
 
 ### Install
 
-1. Install the integrations above and add the helpers and script from `examples/`.
-2. Deploy the card:
+1. Deploy the card:
 
    ```bash
    ./deploy.sh <ssh-host>
    ```
 
-   Without SSH, copy the files in `www/` to `/config/www/hkcalendar/`.
+   Without SSH, copy **every** file in `www/` to `/config/www/hkcalendar/`. The card loads its other files relative to the JS file, so they must stay together.
 
-3. Under Settings → Dashboards → Resources, add `/local/hkcalendar/chinese-calendar-card.js` as a JavaScript module.
-4. Add the card to a dashboard, as shown in `examples/lovelace-card.yaml`.
-
-The CSS is loaded relative to the JS file, so keep `.js` and `.css` in the same directory.
+2. Under Settings → Dashboards → Resources, add `/local/hkcalendar/chinese-calendar-card.js` as a JavaScript module.
+3. Add the 「中式掛曆」 card to a dashboard and pick calendars in the editor. For YAML, see `examples/lovelace-card.yaml`.
 
 ### Card options
 
+All optional.
+
 | Option | Meaning | Default |
 |--------|---------|---------|
-| `date_entity` | Date entity, as `YYYY-MM-DD` | Required |
-| `time_entity` | Time entity, as `HH:MM` | Required |
-| `lunar_year_entity` | Lunar year | Required |
-| `lunar_entity` | Lunar date | Required |
-| `yi_entity` | Favourable activities, space separated | Required |
-| `ji_entity` | Unfavourable activities, space separated | Required |
-| `rolling_text_entity` | Scrolling events text | Required |
-| `today_entity` | Daily text | Required |
-| `workday_entity` | Workday entity; `off` uses the holiday colour | Optional |
+| `holiday_calendars` | Holiday calendars, one or more | None (only Sundays use the holiday colour) |
+| `event_calendars` | Event calendars, one or more | None (shows 「無日程」) |
 | `holidayColor` | Holiday colour | `#CC0000` |
 | `workdayColor` | Workday colour | `#006400` |
+
+The card shows the first four favourable and unfavourable items. Calendars are re-read every 10 minutes and at midnight.
+
+### Third-party notice
+
+The lunar date and almanac are computed by [lunar-javascript](https://github.com/6tail/lunar-javascript) 1.7.7, bundled under the MIT license. See `www/lunar-javascript.LICENSE`.
 
 ### Development
 
@@ -124,4 +126,10 @@ The CSS is loaded relative to the JS file, so keep `.js` and `.css` in the same 
 npm test
 ```
 
-Requires Node.js 22 or later, with no other dependencies. Tests are pinned to the Hong Kong time zone (see H13 in IMPROVEMENTS.md).
+Requires Node.js 22 or later. Tests run once in the local time zone and once in `America/New_York`.
+
+`www/lunar-lib.js` is generated. To rebuild it:
+
+```bash
+npm install && npm run build:lunar
+```

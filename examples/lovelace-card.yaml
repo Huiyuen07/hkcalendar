@@ -1,13 +1,6 @@
-# 掛曆卡片設定 / calendar card config
+# 掛曆卡片設定，所有選項都是可選的 / calendar card config; every option is optional
 type: custom:chinese-calendar-card
-date_entity: sensor.date
-time_entity: sensor.time
-lunar_year_entity: sensor.lunar_year
-lunar_entity: sensor.lunar_date
-yi_entity: sensor.trad_cal_yi
-ji_entity: sensor.trad_cal_ji
-rolling_text_entity: input_text.calendar
-today_entity: sensor.today
-workday_entity: binary_sensor.hksar_workday
-holidayColor: "#d43b02"
-workdayColor: "#2e8b57"
+holiday_calendars:
+  - calendar.hksar
+event_calendars:
+  - calendar.family
