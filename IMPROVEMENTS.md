@@ -6,7 +6,7 @@
 
 目標：加入卡片就能用，資料不會因為某個網站或整合停止服務而消失，用戶不需要自己建立 helper、template、script 或 automation。所有地區一律顯示繁體中文。
 
-最後更新：2026-11-02。本輪的完整設計見 [`docs/superpowers/specs/2026-11-02-offline-calendar-design.md`](docs/superpowers/specs/2026-11-02-offline-calendar-design.md)。
+最後更新：2026-11-03。上一輪的完整設計見 [`docs/superpowers/specs/2026-11-02-offline-calendar-design.md`](docs/superpowers/specs/2026-11-02-offline-calendar-design.md)。
 
 ### 已作的決定
 
@@ -17,6 +17,7 @@
 | D3 | **所有日曆文字一律繁體**，以內建對照表轉換，不用 OpenCC | 傳統感覺；lunar-js 輸出的詞彙是有限集合，用小表就能涵蓋 |
 | D4 | **保留英文月份和英文星期作裝飾** | 傳統手撕日曆的特色 |
 | D5 | **假日紅 `#CC0000`、工作日綠 `#006400` 寫死，不設選項** | 傳統掛曆顏色，讓用戶修改反而尷尬 |
+| D6 | **深色模式下，文字改用較亮的紅 `#FF6B6B` 和綠 `#4CAF50`；頁頭和星期仍用 D5 的顏色** | D5 的紅綠在深色底上對比只有 2.9 和 2.3，難以閱讀；調亮後約 6.1。白字配傳統紅綠底在兩種模式都清楚 |
 
 ### 資料來源結論
 
@@ -51,10 +52,10 @@
 
 ### 下一輪
 
-- [ ] **H1 本專案授權：** 選定授權並加入 `LICENSE`。
+- [x] **H1 本專案授權：** 採用 MIT，與打包的 lunar-js 一致，加入 `LICENSE`，`package.json` 註明 `"license": "MIT"`。
 - [ ] **H6 CI 和 HACS：** 加入 GitHub Actions 測試、HACS 驗證和截圖。
-- [ ] **H9 字型：** 優先用系統字型，Google Fonts 改為可選，避免離線環境等待載入。
-- [ ] **H10 響應式和深色模式：** 現在固定白底和 180px 日期字，闊度上限 400px。
+- [x] **H9 字型：** 刪除 Google Fonts，只用系統字型清單（Noto Sans TC → 蘋方 → 微軟正黑體 → Noto Sans CJK TC → … → sans-serif），不設選項，完全離線。
+- [x] **H10 響應式和深色模式：** 以 container query 按卡片闊度等比例縮放（以 400px 為藍本，最多 1.5 倍），取消 400px 上限。深色模式跟隨 HA 主題：深色紙，文字用較亮的紅 `#FF6B6B` 和綠 `#4CAF50`，頁頭和星期仍是 D5 的傳統顏色。
 
 ### 作者環境遷移（本輪完成後；每一步動手前先確認）
 
@@ -77,7 +78,7 @@
 
 Goal: add the card and it works. No data should disappear because a website or integration stops working, and users should never have to build helpers, templates, scripts or automations. Every region sees Traditional Chinese.
 
-Last updated: 2026-11-02. The full design for this round is in [`docs/superpowers/specs/2026-11-02-offline-calendar-design.md`](docs/superpowers/specs/2026-11-02-offline-calendar-design.md) (Chinese).
+Last updated: 2026-11-03. The full design for the previous round is in [`docs/superpowers/specs/2026-11-02-offline-calendar-design.md`](docs/superpowers/specs/2026-11-02-offline-calendar-design.md) (Chinese).
 
 ### Decisions
 
@@ -88,6 +89,7 @@ Last updated: 2026-11-02. The full design for this round is in [`docs/superpower
 | D3 | **All calendar text in Traditional Chinese**, converted with a built-in table instead of OpenCC | Traditional feel. lunar-js uses a small, fixed vocabulary that a short table covers |
 | D4 | **Keep the English month and weekday as decoration** | A feature of traditional tear-off calendars |
 | D5 | **Holiday red `#CC0000` and workday green `#006400` are fixed, not options** | They are the traditional calendar colours; letting users change them would look out of place |
+| D6 | **In dark mode, text uses a lighter red `#FF6B6B` and green `#4CAF50`; the header and weekday band keep the D5 colours** | On dark paper the D5 colours have a contrast of only 2.9 and 2.3, which is hard to read; the lighter shades reach about 6.1. White text on the traditional colours reads well in both modes |
 
 ### Data sources
 
@@ -122,10 +124,10 @@ Also resolved by the work above:
 
 ### Next round
 
-- [ ] **H1 Project license:** Choose a license and add `LICENSE`.
+- [x] **H1 Project license:** MIT, matching the bundled lunar-js. Added `LICENSE` and `"license": "MIT"` in `package.json`.
 - [ ] **H6 CI and HACS:** Add GitHub Actions tests, HACS validation and screenshots.
-- [ ] **H9 Fonts:** Prefer system fonts and make Google Fonts optional, so offline setups do not wait on it.
-- [ ] **H10 Responsive layout and dark mode:** The card currently has a fixed white background, a 180px date and a 400px maximum width.
+- [x] **H9 Fonts:** Google Fonts removed. The card uses a list of system fonts only (Noto Sans TC → PingFang TC → Microsoft JhengHei → Noto Sans CJK TC → … → sans-serif), with no option, fully offline.
+- [x] **H10 Responsive layout and dark mode:** A container query scales the card with its width (drawn for 400px, up to 1.5×), and the 400px cap is gone. Dark mode follows the HA theme: dark paper, with text in a lighter red `#FF6B6B` and green `#4CAF50`. The header and weekday band keep the traditional D5 colours.
 
 ### Author's own migration (after this round; confirm before each step)
 

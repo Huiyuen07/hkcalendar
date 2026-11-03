@@ -47,6 +47,16 @@ Home Assistant 的中式掛曆卡片，以傳統手撕日曆的樣式顯示公�
 
 假日用紅色（`#CC0000`），工作日用綠色（`#006400`）。這是傳統掛曆的顏色，所以不設選項。宜、忌各顯示頭四項。日曆每 10 分鐘及每日零時重新讀取。
 
+### 外觀
+
+- **闊度：** 卡片跟隨所在欄位的闊度等比例縮放，以 400px 闊為藍本，最多放大到 600px 闊的比例。
+- **深色模式：** 跟隨 HA 主題的深色模式。紙張改用主題的卡片底色，文字改用較亮的紅（`#FF6B6B`）和綠（`#4CAF50`），頁頭和星期仍是傳統紅綠底配白字。
+- **字型：** 只用系統字型，依次為 Noto Sans TC、蘋方、微軟正黑體、Noto Sans CJK TC 等，不經網絡載入。
+
+### 授權
+
+本專案以 [MIT 授權](LICENSE)發佈。
+
 ### 第三方授權
 
 農曆和宜忌由 [lunar-javascript](https://github.com/6tail/lunar-javascript) 1.7.7 計算，以 MIT 授權隨卡附上，見 `www/lunar-javascript.LICENSE`。
@@ -111,6 +121,16 @@ All optional.
 | `event_calendars` | Event calendars, one or more | None (shows 「無日程」) |
 
 Holidays are red (`#CC0000`) and workdays green (`#006400`). These are the traditional calendar colours, so they are not options. The card shows the first four favourable and unfavourable items. Calendars are re-read every 10 minutes and at midnight.
+
+### Appearance
+
+- **Width:** The card scales with its column. It is drawn for a 400px width and grows up to the proportions of a 600px-wide card.
+- **Dark mode:** Follows the dark mode of the HA theme. The paper takes the theme's card background, and text uses a lighter red (`#FF6B6B`) and green (`#4CAF50`). The header and weekday band keep the traditional colours behind white text.
+- **Fonts:** System fonts only, in the order Noto Sans TC, PingFang TC, Microsoft JhengHei, Noto Sans CJK TC and so on. Nothing is loaded over the network.
+
+### License
+
+Released under the [MIT License](LICENSE).
 
 ### Third-party notice
 

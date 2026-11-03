@@ -1,32 +1,49 @@
-@import url(//fonts.googleapis.com/earlyaccess/notosanstc.css);
+/*
+ * 版面以 400px 闊為藍本，所有尺寸都用 --u 表示（400px 闊時 1u = 1px），
+ * 所以卡片會跟隨所在欄位的闊度等比例縮放，最大放大到 600px 闊的比例。
+ * The layout is drawn for a 400px-wide card. Every size is written in --u
+ * (1u = 1px at 400px wide), so the card scales with its column, up to the
+ * proportions of a 600px-wide card.
+ */
+:host {
+    display: block;
+    container-type: inline-size;
+    --u: min(calc(100cqi / 400), calc(600px / 400));
+}
 
 .calendar {
-    max-width: 400px;
+    --paper-color: #fff;
     width: 100%;
     margin: 0 auto;
     height: 100%;
-    background-color: #fff;
-    box-shadow: 5px 5px 15px rgba(0,0,0,0.3);
-    border: 10px solid var(--theme-color);
+    background-color: var(--paper-color);
+    box-shadow: calc(5 * var(--u)) calc(5 * var(--u)) calc(15 * var(--u)) rgba(0,0,0,0.3);
+    border: calc(10 * var(--u)) solid var(--theme-color);
     box-sizing: border-box;
     display: flex;
     flex-direction: column;
     align-items: center;
-    font-family: 'Noto Sans TC';
+    /* 系統字型，不經網絡載入 / system fonts only, nothing loaded over the network */
+    font-family: 'Noto Sans TC', 'PingFang TC', 'Microsoft JhengHei', 'Noto Sans CJK TC',
+                 'Source Han Sans TC', 'Heiti TC', sans-serif;
+}
+
+/* 深色模式：深色紙，文字改用較亮的紅綠 / dark mode: dark paper, lighter red and green text */
+.calendar.dark {
+    --paper-color: var(--card-background-color, #1c1c1c);
 }
 
 .header {
     display: flex;
     justify-content: space-between;
     width: 100%;
-    max-width: 400px;
     align-items: center;
-    font-size: 24px;
+    font-size: calc(24 * var(--u));
     background-color: var(--theme-color);
     color: #fff;
-    padding: 0px 10px 5px;
+    padding: 0 calc(10 * var(--u)) calc(5 * var(--u));
     box-sizing: border-box;
-    border: 3px solid var(--theme-color);
+    border: calc(3 * var(--u)) solid var(--theme-color);
 }
 
 .header div {
@@ -43,22 +60,21 @@
 }
 
 .current-time {
-    font-size: 25px;
-    color: var(--theme-color);
-    margin: 5px 0;
+    font-size: calc(25 * var(--u));
+    color: var(--ink-color);
+    margin: calc(5 * var(--u)) 0;
 }
 
 .date {
-    font-size: 180px;
+    font-size: calc(180 * var(--u));
     font-weight: bold;
-    margin: 0 0 10px 0;
-    color: var(--theme-color);
-    line-height: 170px;
+    margin: 0 0 calc(10 * var(--u)) 0;
+    color: var(--ink-color);
+    line-height: calc(170 * var(--u));
 }
 
 .content-wrapper {
     width: 100%;
-    max-width: 400px;
     align-items: center;
     margin: 0;
     display: flex;
@@ -68,58 +84,58 @@
 
 .today-text {
     width: 100%;
-    font-size: 18px;
-    color: var(--theme-color);
+    font-size: calc(18 * var(--u));
+    color: var(--ink-color);
     text-align: center;
-    margin-bottom: 10px;
+    margin-bottom: calc(10 * var(--u));
 }
 
 .table-container {
     width: 100%;
     border-collapse: collapse;
-    font-size: 18px;
-    border-width: 3px 0;
+    font-size: calc(18 * var(--u));
+    border-width: calc(3 * var(--u)) 0;
     border-style: solid;
-    border-color: var(--theme-color);
+    border-color: var(--ink-color);
 }
 
 .table-container td {
     text-align: center;
     vertical-align: top;
-    color: var(--theme-color);
+    color: var(--ink-color);
     padding: 0;
 }
 
 .yi-ji-container {
-    height: 80px;
+    height: calc(80 * var(--u));
     overflow: hidden;
-    font-size: 16px;
-    line-height: 20px;
+    font-size: calc(16 * var(--u));
+    line-height: calc(20 * var(--u));
 }
 
 .highlight-weekday {
     background-color: var(--theme-color);
     color: #fff;
-    padding: 10px 0;
+    padding: calc(10 * var(--u)) 0;
     display: block;
     width: 100%;
     box-sizing: border-box;
 }
 
 .lunar-year {
-    font-size: 16px;
-    color: var(--theme-color);
-    margin-bottom: 5px;
-    padding: 10px 0 0 0;
+    font-size: calc(16 * var(--u));
+    color: var(--ink-color);
+    margin-bottom: calc(5 * var(--u));
+    padding: calc(10 * var(--u)) 0 0 0;
 }
 
 .schedule-container {
     width: 100%;
     border-top: none;
-    padding: 5px;
-    color: var(--theme-color);
-    font-size: 16px;
-    height: 40px;
+    padding: calc(5 * var(--u));
+    color: var(--ink-color);
+    font-size: calc(16 * var(--u));
+    height: calc(40 * var(--u));
     overflow: hidden;
     box-sizing: border-box;
     display: flex;
@@ -140,18 +156,18 @@
 
 .suitable {
     width: 25%;
-    padding: 10px !important;
-    border-width: 0 3px 0 0;
+    padding: calc(10 * var(--u)) !important;
+    border-width: 0 calc(3 * var(--u)) 0 0;
     border-style: solid;
-    border-color: var(--theme-color);
+    border-color: var(--ink-color);
 }
 
 .forbidden {
     width: 25%;
-    padding: 10px !important;
-    border-width: 0 0 0 3px;
+    padding: calc(10 * var(--u)) !important;
+    border-width: 0 0 0 calc(3 * var(--u));
     border-style: solid;
-    border-color: var(--theme-color);
+    border-color: var(--ink-color);
 }
 
 /* 淡入動畫 */

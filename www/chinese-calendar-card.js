@@ -3,7 +3,7 @@ import {
   addDays, dayKey, fetchEvents, formatEvents, formatTime12, holidayStatus,
 } from "./calendar-data.js";
 
-const CARD_VERSION = "0.2.1";
+const CARD_VERSION = "0.3.0";
 const ENGLISH_MONTHS = ["January", "February", "March", "April", "May", "June",
                         "July", "August", "September", "October", "November", "December"];
 const CHINESE_MONTHS = ["一月", "二月", "三月", "四月", "五月", "六月",
@@ -18,6 +18,10 @@ const DEFAULTS = {
 // The traditional calendar red and green are part of the design, so they are not options.
 const HOLIDAY_COLOR = "#CC0000";
 const WORKDAY_COLOR = "#006400";
+// On dark paper the traditional colours are too dim to read, so text uses lighter shades.
+// The header and weekday band keep the traditional colours behind white text.
+const HOLIDAY_INK_DARK = "#FF6B6B";
+const WORKDAY_INK_DARK = "#4CAF50";
 const REFRESH_MS = 10 * 60 * 1000;
 // Make-up workdays can be named weeks before or after the holiday that mentions them.
 const HOLIDAY_WINDOW_DAYS = 45;
@@ -77,8 +81,10 @@ class ChineseCalendarCard extends HTMLElement {
 
   set hass(hass) {
     const first = !this._hass;
+    const wasDark = this.isDark();
     this._hass = hass;
     if (first) this.refreshCalendars(new Date());
+    else if (this.isDark() !== wasDark) this.render();
   }
 
   connectedCallback() {
@@ -117,10 +123,15 @@ class ChineseCalendarCard extends HTMLElement {
     this.render();
   }
 
+  isDark() {
+    return Boolean(this._hass?.themes?.darkMode);
+  }
+
   prepareData(now) {
     const almanac = getAlmanac(now.getFullYear(), now.getMonth() + 1, now.getDate());
     const key = dayKey(now);
     const holiday = holidayStatus(this._holidayEvents, key, now.getDay() === 0);
+    const dark = this.isDark();
     return {
       englishMonth: ENGLISH_MONTHS[now.getMonth()],
       year: now.getFullYear(),
@@ -140,6 +151,10 @@ class ChineseCalendarCard extends HTMLElement {
       ].filter(Boolean).join(" ｜ "),
       eventSummary: formatEvents(this._events, key),
       themeColor: holiday.isHoliday ? HOLIDAY_COLOR : WORKDAY_COLOR,
+      inkColor: holiday.isHoliday
+        ? (dark ? HOLIDAY_INK_DARK : HOLIDAY_COLOR)
+        : (dark ? WORKDAY_INK_DARK : WORKDAY_COLOR),
+      dark,
     };
   }
 
@@ -179,6 +194,8 @@ class ChineseCalendarCard extends HTMLElement {
   updateElements(data) {
     const el = this._elements;
     el.calendar.style.setProperty("--theme-color", data.themeColor);
+    el.calendar.style.setProperty("--ink-color", data.inkColor);
+    el.calendar.classList.toggle("dark", data.dark);
     this.updateWithFade(el.englishMonth, data.englishMonth);
     this.updateWithFade(el.year, data.year);
     this.updateWithFade(el.chineseMonth, data.chineseMonth);

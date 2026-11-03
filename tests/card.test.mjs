@@ -246,3 +246,41 @@ test("a calendar list cleared in the editor falls back to none", () => {
   assert.deepEqual(card.config.holiday_calendars, []);
   assert.deepEqual(card.config.event_calendars, []);
 });
+
+test("light mode writes text in the traditional red and green", () => {
+  const card = makeCard();
+  card._hass = { themes: { darkMode: false } };
+  const sunday = card.prepareData(new Date(2026, 10, 1));
+  const monday = card.prepareData(new Date(2026, 10, 2));
+  assert.equal(sunday.dark, false);
+  assert.equal(sunday.inkColor, HOLIDAY);
+  assert.equal(monday.inkColor, WORKDAY);
+});
+
+test("dark mode keeps the header colours and lightens the text", () => {
+  const card = makeCard();
+  card._hass = { themes: { darkMode: true } };
+  const sunday = card.prepareData(new Date(2026, 10, 1));
+  const monday = card.prepareData(new Date(2026, 10, 2));
+  assert.equal(sunday.dark, true);
+  assert.equal(sunday.themeColor, HOLIDAY);
+  assert.equal(sunday.inkColor, "#FF6B6B");
+  assert.equal(monday.themeColor, WORKDAY);
+  assert.equal(monday.inkColor, "#4CAF50");
+});
+
+test("the card is light before hass arrives", () => {
+  assert.equal(makeCard().prepareData(new Date(2026, 10, 2)).dark, false);
+});
+
+test("switching the HA theme to dark re-renders the card", () => {
+  const card = makeCard();
+  card.refreshCalendars = () => {};
+  const render = mock.fn();
+  card.render = render;
+  card.hass = { themes: { darkMode: false } };
+  card.hass = { themes: { darkMode: false } };
+  assert.equal(render.mock.callCount(), 0);
+  card.hass = { themes: { darkMode: true } };
+  assert.equal(render.mock.callCount(), 1);
+});

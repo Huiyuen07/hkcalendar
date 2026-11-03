@@ -2,6 +2,7 @@
   "name": "hkcalendar",
   "version": "0.1.0",
   "private": true,
+  "license": "MIT",
   "description": "Chinese wall calendar card for Home Assistant, aimed at Hong Kong users",
   "type": "module",
   "scripts": {
