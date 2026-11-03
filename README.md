@@ -6,6 +6,8 @@
 
 傳統手撕日曆別具特色，也是傳統華人家庭必備的產品。我一直渴望在 Home Assistant 加入中式日曆卡片，顯示公曆、農曆、宜忌、沖煞、節氣、農曆節日、假期。假期與星期日會轉為假日顏色。所有日曆文字一律以繁體中文顯示，英文月份和星期作為裝飾保留，也與實際手撕日曆的樣式一致。數碼時代，我加上實際時間和當日日程的選項。
 
+![中式掛曆卡片：淺色及深色模式](images/card.png)
+
 ### 安裝
 
 #### 方法一：自訂儲存庫
@@ -35,6 +37,8 @@ HACS 會自動加入資源，版本更新也在 HACS 完成。如果資源是用
 ## English
 
 The traditional tear-off calendar has a charm of its own, and it is a fixture of traditional Chinese homes. I have long wanted a Chinese calendar card in Home Assistant that shows the Gregorian and lunar dates, the daily almanac (宜／忌), zodiac clash, solar terms, lunar festivals and holidays. Holidays and Sundays turn to the holiday colour. All calendar text is in Traditional Chinese, with the English month and weekday kept as decoration, just like a real tear-off calendar. For the digital age, I added the current time and an option for today's events.
+
+![Chinese calendar card in light and dark mode](images/card.png)
 
 ### Install
 
