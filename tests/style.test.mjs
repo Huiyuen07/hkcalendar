@@ -6,12 +6,12 @@ const read = (path) => readFile(new URL(`../${path}`, import.meta.url), "utf8");
 const stripComments = (css) => css.replace(/\/\*[\s\S]*?\*\//g, "");
 
 test("the stylesheet loads no web fonts", async () => {
-  const css = await read("www/chinese-calendar-card.css");
+  const css = await read("dist/chinese-calendar-card.css");
   assert.doesNotMatch(css, /@import|googleapis|url\(/i);
 });
 
 test("the stylesheet falls back through system Traditional Chinese fonts", async () => {
-  const css = await read("www/chinese-calendar-card.css");
+  const css = await read("dist/chinese-calendar-card.css");
   const family = css.match(/font-family:\s*([^;]+);/)[1];
   for (const font of ["Noto Sans TC", "PingFang TC", "Microsoft JhengHei", "Noto Sans CJK TC", "sans-serif"]) {
     assert.ok(family.includes(font), `${font} missing from ${family}`);
@@ -20,7 +20,7 @@ test("the stylesheet falls back through system Traditional Chinese fonts", async
 });
 
 test("the layout scales with the card instead of fixed pixel sizes", async () => {
-  const css = stripComments(await read("www/chinese-calendar-card.css"));
+  const css = stripComments(await read("dist/chinese-calendar-card.css"));
   assert.match(css, /container-type:\s*inline-size/);
   assert.doesNotMatch(css, /max-width:\s*400px/);
   // Every size is written in the scale unit; only 0 and hairline widths stay in px.
@@ -30,7 +30,7 @@ test("the layout scales with the card instead of fixed pixel sizes", async () =>
 });
 
 test("dark mode has its own paper colour", async () => {
-  const css = await read("www/chinese-calendar-card.css");
+  const css = await read("dist/chinese-calendar-card.css");
   assert.match(css, /\.calendar\.dark\s*\{[^}]*--paper-color/);
 });
 

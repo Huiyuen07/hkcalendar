@@ -4,148 +4,58 @@
 
 ## 中文
 
-Home Assistant 的中式掛曆卡片，以傳統手撕日曆的樣式顯示公曆、農曆、宜忌、沖煞、節氣、農曆節日、假期和當日日程。假期與星期日會轉為假日顏色。所有日曆文字一律以繁體中文顯示，英文月份和星期作為裝飾保留。
-
-### 不用設定也能用
-
-農曆、宜忌、沖煞、節氣和農曆節日都在卡片內計算，不需要網絡，也沒有年份限制。加入卡片後，不設定任何選項也會顯示完整日曆。
-
-以下兩項是可選的：
-
-| 用途 | 來源 |
-|------|------|
-| 公眾假期 | HA 內建的 [Holiday 整合](https://www.home-assistant.io/integrations/holiday/)，或任何日曆 |
-| 當日日程 | 任何 HA 日曆，例如 Google 日曆或本地日曆 |
-
-**假期設定：** 在「設定 → 裝置與服務」加入 Holiday 整合，揀選地區，語言請選繁體：香港選 `zh_HK`，台灣和中國大陸選 `zh_TW`。之後在卡片編輯器揀選它建立的日曆。
-
-- 當日在所揀日曆中有全日事件，就是假期。
-- 大陸的補班日（例如「放假日（2026-02-14 補班）」所指的日子）會使用工作日顏色。
-- 其他地區的用戶可以揀選該地區的 Holiday 日曆，或任何自訂日曆。
+傳統手撕日曆別具特色，也是傳統華人家庭必備的產品。我一直渴望在 Home Assistant 加入中式日曆卡片，顯示公曆、農曆、宜忌、沖煞、節氣、農曆節日、假期。假期與星期日會轉為假日顏色。所有日曆文字一律以繁體中文顯示，英文月份和星期作為裝飾保留，也與實際手撕日曆的樣式一致。數碼時代，我加上實際時間和當日日程的選項。
 
 ### 安裝
 
-1. 部署卡片：
+#### 方法一：自訂儲存庫
 
-   ```bash
-   ./deploy.sh <ssh-host>
-   ```
+1. 在 HACS 右上角選單選「Custom repositories」，Repository 填 `https://github.com/Huiyuen07/hkcalendar`，Type 選「Dashboard」。
+2. 在 HACS 搜尋「hkcalendar」並下載，然後重新整理瀏覽器。
 
-   沒有 SSH 的話，把 `www/` 內**所有**檔案複製到 `/config/www/hkcalendar/`。卡片會以 JS 檔的位置為基準載入同目錄的其他檔案，所以它們必須放在一起。
+#### 方法二：HACS 安裝（有待 HACS 審批）
 
-2. 在「設定 → 儀表板 → 資源」加入 `/local/hkcalendar/chinese-calendar-card.js`，類型選 JavaScript 模組。
-3. 在 dashboard 加入「中式掛曆」卡片，然後在編輯器揀選日曆。YAML 寫法見 `examples/lovelace-card.yaml`。
+HACS 批准後，不用加入自訂儲存庫，直接在 HACS 搜尋「hkcalendar」並下載，然後重新整理瀏覽器。
 
-### 卡片選項
+HACS 會自動加入資源，版本更新也在 HACS 完成。如果資源是用 YAML 管理，要自行加入 `/hacsfiles/hkcalendar/chinese-calendar-card.js`。
 
-全部可選。
+安裝後，在 Dashboard 新增卡片，搜尋「中式掛曆」。
 
-| 選項 | 說明 | 預設值 |
-|------|------|--------|
-| `holiday_calendars` | 假期日曆，一個或多個 | 無（只有星期日用假日顏色） |
-| `event_calendars` | 日程日曆，一個或多個 | 無（顯示「無日程」） |
+### 鳴謝
 
-假日用紅色（`#CC0000`），工作日用綠色（`#006400`）。這是傳統掛曆的顏色，所以不設選項。宜、忌各顯示頭四項。日曆每 10 分鐘及每日零時重新讀取。
-
-### 外觀
-
-- **闊度：** 卡片跟隨所在欄位的闊度等比例縮放，以 400px 闊為藍本，最多放大到 600px 闊的比例。
-- **深色模式：** 跟隨 HA 主題的深色模式。紙張改用主題的卡片底色，文字改用較亮的紅（`#FF6B6B`）和綠（`#4CAF50`），頁頭和星期仍是傳統紅綠底配白字。
-- **字型：** 只用系統字型，依次為 Noto Sans TC、蘋方、微軟正黑體、Noto Sans CJK TC 等，不經網絡載入。
+- 農曆、宜忌、沖煞、節氣和農曆節日由 [6tail](https://github.com/6tail) 的 [lunar-javascript](https://github.com/6tail/lunar-javascript) 計算。
+- 公眾假期來自 Home Assistant 的 [Holiday 整合](https://www.home-assistant.io/integrations/holiday/)，以及維護 [holidays](https://github.com/vacanza/holidays) 的社群。
 
 ### 授權
 
 本專案以 [MIT 授權](LICENSE)發佈。
 
-### 第三方授權
-
-農曆和宜忌由 [lunar-javascript](https://github.com/6tail/lunar-javascript) 1.7.7 計算，以 MIT 授權隨卡附上，見 `www/lunar-javascript.LICENSE`。
-
-### 開發
-
-```bash
-npm test
-```
-
-只需 Node.js 22 或以上。測試會在本機時區和 `America/New_York` 各跑一次。
-
-`www/lunar-lib.js` 是生成檔。要重新生成時執行：
-
-```bash
-npm install && npm run build:lunar
-```
-
 ---
 
 ## English
 
-A Chinese wall calendar card for Home Assistant. In the style of a traditional tear-off calendar, it shows the Gregorian and lunar dates, the daily almanac (宜／忌), zodiac clash, solar terms, lunar festivals, holidays and today's events. Holidays and Sundays use the holiday colour. All calendar text is in Traditional Chinese, with the English month and weekday kept as decoration.
-
-### Works with no setup
-
-The lunar date, almanac, zodiac clash, solar terms and lunar festivals are computed inside the card, with no network and no end year. Add the card and it shows a full calendar without any options.
-
-Two things are optional:
-
-| Purpose | Source |
-|---------|--------|
-| Public holidays | HA's built-in [Holiday integration](https://www.home-assistant.io/integrations/holiday/), or any calendar |
-| Today's events | Any HA calendar, such as Google Calendar or a local calendar |
-
-**Holidays:** Under Settings → Devices & services, add the Holiday integration, choose your region and pick a Traditional Chinese language: `zh_HK` for Hong Kong, `zh_TW` for Taiwan and mainland China. Then pick the calendar it creates in the card editor.
-
-- A day with an all-day event in a chosen calendar is a holiday.
-- Mainland make-up workdays, such as the day named in 「放假日（2026-02-14 補班）」, use the workday colour.
-- Users elsewhere can pick their region's Holiday calendar or any calendar of their own.
+The traditional tear-off calendar has a charm of its own, and it is a fixture of traditional Chinese homes. I have long wanted a Chinese calendar card in Home Assistant that shows the Gregorian and lunar dates, the daily almanac (宜／忌), zodiac clash, solar terms, lunar festivals and holidays. Holidays and Sundays turn to the holiday colour. All calendar text is in Traditional Chinese, with the English month and weekday kept as decoration, just like a real tear-off calendar. For the digital age, I added the current time and an option for today's events.
 
 ### Install
 
-1. Deploy the card:
+#### Option 1: Custom repository
 
-   ```bash
-   ./deploy.sh <ssh-host>
-   ```
+1. In HACS, open the top-right menu and choose "Custom repositories". Enter `https://github.com/Huiyuen07/hkcalendar` as the repository and choose "Dashboard" as the type.
+2. Search HACS for "hkcalendar", download it, then refresh the browser.
 
-   Without SSH, copy **every** file in `www/` to `/config/www/hkcalendar/`. The card loads its other files relative to the JS file, so they must stay together.
+#### Option 2: HACS (awaiting HACS approval)
 
-2. Under Settings → Dashboards → Resources, add `/local/hkcalendar/chinese-calendar-card.js` as a JavaScript module.
-3. Add the 「中式掛曆」 card to a dashboard and pick calendars in the editor. For YAML, see `examples/lovelace-card.yaml`.
+Once HACS approves it, there is no need to add a custom repository. Search HACS for "hkcalendar", download it, then refresh the browser.
 
-### Card options
+HACS adds the resource for you and handles updates. If you manage resources in YAML, add `/hacsfiles/hkcalendar/chinese-calendar-card.js` yourself.
 
-All optional.
+After installing, add a card to a dashboard and search for 「中式掛曆」.
 
-| Option | Meaning | Default |
-|--------|---------|---------|
-| `holiday_calendars` | Holiday calendars, one or more | None (only Sundays use the holiday colour) |
-| `event_calendars` | Event calendars, one or more | None (shows 「無日程」) |
+### Acknowledgements
 
-Holidays are red (`#CC0000`) and workdays green (`#006400`). These are the traditional calendar colours, so they are not options. The card shows the first four favourable and unfavourable items. Calendars are re-read every 10 minutes and at midnight.
-
-### Appearance
-
-- **Width:** The card scales with its column. It is drawn for a 400px width and grows up to the proportions of a 600px-wide card.
-- **Dark mode:** Follows the dark mode of the HA theme. The paper takes the theme's card background, and text uses a lighter red (`#FF6B6B`) and green (`#4CAF50`). The header and weekday band keep the traditional colours behind white text.
-- **Fonts:** System fonts only, in the order Noto Sans TC, PingFang TC, Microsoft JhengHei, Noto Sans CJK TC and so on. Nothing is loaded over the network.
+- The lunar date, almanac, zodiac clash, solar terms and lunar festivals are computed by [lunar-javascript](https://github.com/6tail/lunar-javascript) from [6tail](https://github.com/6tail).
+- Public holidays come from Home Assistant's [Holiday integration](https://www.home-assistant.io/integrations/holiday/) and the community that maintains [holidays](https://github.com/vacanza/holidays).
 
 ### License
 
 Released under the [MIT License](LICENSE).
-
-### Third-party notice
-
-The lunar date and almanac are computed by [lunar-javascript](https://github.com/6tail/lunar-javascript) 1.7.7, bundled under the MIT license. See `www/lunar-javascript.LICENSE`.
-
-### Development
-
-```bash
-npm test
-```
-
-Requires Node.js 22 or later. Tests run once in the local time zone and once in `America/New_York`.
-
-`www/lunar-lib.js` is generated. To rebuild it:
-
-```bash
-npm install && npm run build:lunar
-```

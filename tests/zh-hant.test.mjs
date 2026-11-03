@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { Solar } from "../www/lunar-lib.js";
-import { CHAR_MAP, toTraditional } from "../www/zh-hant.js";
+import { Solar } from "../dist/lunar-lib.js";
+import { CHAR_MAP, toTraditional } from "../dist/zh-hant.js";
 
 // Every string the card takes from lunar-js for one day.
 function lunarStrings(lunar) {

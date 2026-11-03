@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import { mock, test } from "node:test";
 import {
   addDays, dayKey, eventOverlapsDay, fetchEvents, formatEvents, formatTime12, holidayStatus,
-} from "../www/calendar-data.js";
+} from "../dist/calendar-data.js";
 
 const allDay = (summary, start, end) => ({ summary, start: { date: start }, end: { date: end } });
 const timed = (summary, start, end) => ({

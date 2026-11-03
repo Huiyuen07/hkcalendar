@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
-# 部署 www/ 到 Home Assistant（HAOS）。
-# Deploy www/ to Home Assistant (HAOS).
+# 部署 dist/ 到 Home Assistant（HAOS）。
+# Deploy dist/ to Home Assistant (HAOS).
 #
 # 用法 / usage:  ./deploy.sh <ssh-host> [dest-dir]
 # <ssh-host> = 你 Home Assistant 的 SSH 連線名（見自己的 ~/.ssh/config）。
@@ -14,7 +14,7 @@ set -euo pipefail
 
 HOST="${1:?Usage: ./deploy.sh <ssh-host-of-home-assistant> [dest-dir]}"
 DEST="${2:-/config/www/hkcalendar}"
-SRC="$(cd "$(dirname "$0")" && pwd)/www"
+SRC="$(cd "$(dirname "$0")" && pwd)/dist"
 
 echo ">> 部署到 ${HOST}:${DEST}"
 tar -C "$SRC" -czf - . | ssh "$HOST" "mkdir -p '${DEST}' && tar -C '${DEST}' -xzf -"

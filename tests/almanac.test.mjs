@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { getAlmanac } from "../www/almanac.js";
+import { getAlmanac } from "../dist/almanac.js";
 
 test("2026-11-02: ordinary day", () => {
   const a = getAlmanac(2026, 11, 2);

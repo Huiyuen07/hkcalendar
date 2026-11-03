@@ -1,5 +1,5 @@
-// 把 lunar-javascript 的 UMD 檔包裝成 ES module，放入 www/。
-// Wrap lunar-javascript's UMD build as an ES module in www/.
+// 把 lunar-javascript 的 UMD 檔包裝成 ES module，放入 dist/。
+// Wrap lunar-javascript's UMD build as an ES module in dist/.
 // 用法 / usage: npm install && npm run build:lunar
 import { copyFile, readFile, writeFile } from "node:fs/promises";
 
@@ -21,6 +21,6 @@ const wrapped = [
   "",
 ].join("\n");
 
-await writeFile(new URL("www/lunar-lib.js", root), wrapped);
-await copyFile(new URL("LICENSE", pkgDir), new URL("www/lunar-javascript.LICENSE", root));
-console.log(`www/lunar-lib.js built from lunar-javascript ${version}`);
+await writeFile(new URL("dist/lunar-lib.js", root), wrapped);
+await copyFile(new URL("LICENSE", pkgDir), new URL("dist/lunar-javascript.LICENSE", root));
+console.log(`dist/lunar-lib.js built from lunar-javascript ${version}`);

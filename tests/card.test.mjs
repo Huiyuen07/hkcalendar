@@ -38,7 +38,7 @@ before(async () => {
       if (name === "chinese-calendar-card-editor") Editor = element;
     },
   };
-  await import("../www/chinese-calendar-card.js");
+  await import("../dist/chinese-calendar-card.js");
 });
 
 const HOLIDAY = "#CC0000";
@@ -185,7 +185,7 @@ test("the first hass triggers a refresh", () => {
 });
 
 test("the card source has no CDN, no fixed paths and no data in innerHTML", async () => {
-  const source = await readFile(new URL("../www/chinese-calendar-card.js", import.meta.url), "utf8");
+  const source = await readFile(new URL("../dist/chinese-calendar-card.js", import.meta.url), "utf8");
   assert.match(source, /new URL\(`chinese-calendar-card\.css[^`]*`, import\.meta\.url\)/);
   assert.doesNotMatch(source, /['"`]\/local\//);
   assert.doesNotMatch(source, /opencc|jsdelivr/i);
