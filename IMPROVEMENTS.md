@@ -53,7 +53,7 @@
 ### 下一輪
 
 - [x] **H1 本專案授權：** 採用 MIT，與打包的 lunar-js 一致，加入 `LICENSE`，`package.json` 註明 `"license": "MIT"`。
-- [x] **H6 CI 和 HACS：** 卡片檔案移到 `dist/`，加入 `hacs.json`、GitHub Actions（`npm test` 和 HACS 驗證）和 README 截圖。已提交 HACS 審批。
+- [x] **H6 CI 和 HACS：** 卡片檔案移到 `dist/`，加入 `hacs.json`、GitHub Actions（`npm test` 和 HACS 驗證）和 README 截圖。2026-11-03 已併入 HACS 預設清單（hacs/default#13215），README 安裝說明改為 HACS 搜尋優先。
 - [x] **H9 字型：** 刪除 Google Fonts，只用系統字型清單（Noto Sans TC → 蘋方 → 微軟正黑體 → Noto Sans CJK TC → … → sans-serif），不設選項，完全離線。
 - [x] **H10 響應式和深色模式：** 以 container query 按卡片闊度等比例縮放（以 400px 為藍本，最多 1.5 倍），取消 400px 上限。深色模式跟隨 HA 主題：深色紙，文字用較亮的紅 `#FF6B6B` 和綠 `#4CAF50`，頁頭和星期仍是 D5 的傳統顏色。
 

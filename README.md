@@ -10,16 +10,15 @@
 
 ### 安裝
 
-#### 方法一：自訂儲存庫
+#### HACS（建議）
 
-1. 在 HACS 右上角選單選「Custom repositories」，Repository 填 `https://github.com/Huiyuen07/hkcalendar`，Type 選「Dashboard」。
-2. 在 HACS 搜尋「hkcalendar」並下載，然後重新整理瀏覽器。
+[![在 HACS 開啟](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=Huiyuen07&repository=hkcalendar&category=plugin)
 
-#### 方法二：HACS 安裝（有待 HACS 審批）
-
-HACS 批准後，不用加入自訂儲存庫，直接在 HACS 搜尋「hkcalendar」並下載，然後重新整理瀏覽器。
+在 HACS 搜尋「中式掛曆」或「hkcalendar」並下載，然後重新整理瀏覽器。
 
 HACS 會自動加入資源，版本更新也在 HACS 完成。如果資源是用 YAML 管理，要自行加入 `/hacsfiles/hkcalendar/chinese-calendar-card.js`。
+
+搜尋不到的話（例如 HACS 版本較舊），可以先在 HACS 右上角選單選「Custom repositories」，Repository 填 `https://github.com/Huiyuen07/hkcalendar`，Type 選「Dashboard」，再搜尋。
 
 安裝後，在 Dashboard 新增卡片，搜尋「中式掛曆」。
 
@@ -42,16 +41,15 @@ The traditional tear-off calendar has a charm of its own, and it is a fixture of
 
 ### Install
 
-#### Option 1: Custom repository
+#### HACS (recommended)
 
-1. In HACS, open the top-right menu and choose "Custom repositories". Enter `https://github.com/Huiyuen07/hkcalendar` as the repository and choose "Dashboard" as the type.
-2. Search HACS for "hkcalendar", download it, then refresh the browser.
+[![Open in HACS](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=Huiyuen07&repository=hkcalendar&category=plugin)
 
-#### Option 2: HACS (awaiting HACS approval)
-
-Once HACS approves it, there is no need to add a custom repository. Search HACS for "hkcalendar", download it, then refresh the browser.
+Search HACS for 「中式掛曆」 or "hkcalendar", download it, then refresh the browser.
 
 HACS adds the resource for you and handles updates. If you manage resources in YAML, add `/hacsfiles/hkcalendar/chinese-calendar-card.js` yourself.
+
+If the search finds nothing (for example, on an older HACS), open the top-right menu in HACS, choose "Custom repositories", enter `https://github.com/Huiyuen07/hkcalendar` as the repository and "Dashboard" as the type, then search again.
 
 After installing, add a card to a dashboard and search for 「中式掛曆」.
 
